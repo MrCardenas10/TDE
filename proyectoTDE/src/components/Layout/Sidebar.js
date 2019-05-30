@@ -130,6 +130,12 @@ const navUsuarios = [
 
 const navEntrada = [
   {
+    to: "/iniciovigilante",
+    name: "Inicio",
+    exact: false,
+    Icon: MdRadioButtonChecked
+  },
+  {
     to: "/entradaestudiante/crear",
     name: "Entrada Estudiante",
     exact: false,
