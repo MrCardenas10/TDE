@@ -8,6 +8,7 @@ import Entrada from "pages/Entrada/Entrada";
 import Recuperar from "pages/producto/Recuperar";
 import Reset from "pages/producto/Reset";
 import EntradaEstudiante from "pages/EntradaEstudiante/EntradaEstudiante";
+import InicioVigilante from "pages/EntradaEstudiante/InicioVigilante";
 import ModificarVisitante from "pages/Visitante/ModificarVisitante";
 import RegistroVisitante from "pages/Visitante/RegistroVisitante";
 import Login from "pages/producto/Login";
@@ -115,6 +116,14 @@ class App extends React.Component {
               layout={MainLayout}
               component={RegistroVisitante}
             />
+
+            <LayoutRoute
+              exact
+              path="/iniciovigilante"
+              layout={MainLayout}
+              component={InicioVigilante}
+            />
+
             <LayoutRoute
               exact
               path="/visitante/modificar/:id_visitante"
@@ -232,7 +241,7 @@ class App extends React.Component {
             />
 
             {localStorage.rol === "2" ? (
-              <Redirect to="/entradaestudiante/crear" />
+              <Redirect to="/iniciovigilante" />
             ) : localStorage.rol === "3" ? (
               <Redirect to="/crearVenta" />
             ) : localStorage.rol === "4" ? (
