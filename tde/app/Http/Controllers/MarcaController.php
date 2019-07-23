@@ -10,8 +10,8 @@ class MarcaController extends Controller
 {
     public function select()
     {
-        $marca = Marca::select("tbl_marca.id_marca","tbl_marca.marca","tbl_marca.estado")
-        ->where("tbl_marca.estado","=","1")
+        $marca = Marca::select("tbl_marca.*")
+        ->where("estado","=","1")
         ->get();
 
         return response()->json([
@@ -25,14 +25,11 @@ class MarcaController extends Controller
         $marcas = Marca::select("tbl_marca.*")
         ->get();
 
-        $marca = Marca::select("tbl_marca.id_marca","tbl_marca.marca","tbl_marca.estado")
-        ->where("tbl_marca.estado","=","1")
-        ->get();
+        
 
         return response()->json([
             "ok"=> true,
-            "data"=> $marcas,
-            "select"=>$marca
+            "data"=> $marcas
         ]);
     }
     

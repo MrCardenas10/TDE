@@ -3,19 +3,21 @@ import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import axios from "axios";
 import { URL } from "./../../config/config";
-import { Card, CardBody, Col } from "reactstrap";
+import { Card, CardBody, Col, Input } from "reactstrap";
 import { TiThumbsDown, TiThumbsUp, TiEdit } from "react-icons/lib/ti";
-import { MdImportantDevices } from "react-icons/lib/md";
+import { MdImportantDevices, MdSearch } from "react-icons/lib/md";
 import NotificationSystem from "react-notification-system";
 import { NOTIFICATION_SYSTEM_STYLE } from "utils/constants";
 import Tabla from "./../../components/Tabla";
 import ModalTipoProducto from "./ModalTipoProducto";
+import { TiInfoLarge } from "react-icons/lib/ti";
+import AyudaTipoProducto from "./AyudaTipoProducto";
 
 const TipoSchema = Yup.object().shape({
   tipo_producto: Yup.string()
     .min(2, "Too Short!")
     .max(50, "Too Long!")
-    .required("Required")
+    .required("Campo obligatorio")
 });
 
 class CrearTipoProducto extends Component {
@@ -25,9 +27,14 @@ class CrearTipoProducto extends Component {
       tipos: [],
       parametro: "",
       tipoproducto: [],
-      abrir_modal: false
+      abrir_modal: false,
+      ayuda_modal: false
     };
   }
+
+  tipo = {
+    tipo_producto: ""
+  };
 
   componentWillReceiveProps({ breakpoint }) {
     if (breakpoint !== this.props.breakpoint) {
@@ -99,6 +106,10 @@ class CrearTipoProducto extends Component {
   }
 
   guardar(value) {
+    this.setState({
+      ayuda_modal: false,
+      abrir_modal:false
+    });
     axios({
       method: "post",
       url: `${URL}/tipoproducto`,
@@ -190,6 +201,14 @@ class CrearTipoProducto extends Component {
     });
   }
 
+  modal_ayuda = e => {
+    e.preventDefault();
+    this.setState({
+      ayuda_modal: true,
+      abrir_modal: false
+    });
+  };
+
   modal_tipoproducto(id) {
     axios({
       method: "get",
@@ -202,7 +221,8 @@ class CrearTipoProducto extends Component {
         let r = respuesta.data;
         this.setState({
           tipoproducto: r.data,
-          abrir_modal: true
+          abrir_modal: true,
+          ayuda_modal: false
         });
       })
       .catch(error => {
@@ -211,6 +231,10 @@ class CrearTipoProducto extends Component {
   }
 
   cambiar_estado(id) {
+    this.setState({
+      ayuda_modal: false,
+      abrir_modal:false
+    });
     axios({
       method: "delete",
       url: `${URL}/tipoproducto/${id}`,
@@ -221,6 +245,7 @@ class CrearTipoProducto extends Component {
       let datos = respuesta.data;
 
       if (datos.ok) {
+        this.state.abrir_modal = false;
         setTimeout(() => {
           if (!this.notificationSystem) {
             return;
@@ -299,7 +324,10 @@ class CrearTipoProducto extends Component {
     var ds = [];
     if (this.state.parametro !== "") {
       data.forEach(v => {
-        if (v.tipoproducto.toLowerCase().includes(this.state.parametro)) {
+        if (
+          v.tipo_producto.toLowerCase().includes(this.state.parametro) ||
+          v.estado.toLowerCase().includes(this.state.parametro)
+        ) {
           ds.push(v);
         }
       });
@@ -310,7 +338,7 @@ class CrearTipoProducto extends Component {
       <div>
         {console.log(this.state.tipoproducto)}
         <Formik
-          initialValues={this.tipos}
+          initialValues={this.tipo}
           validationSchema={TipoSchema}
           onSubmit={value => {
             this.guardar(value);
@@ -318,8 +346,28 @@ class CrearTipoProducto extends Component {
         >
           {({ errors, touched }) => (
             <Form id="limpiar_campos">
-              <div align="center">
-                <h3>Tipos de Producto</h3>
+              <div className="row">
+                <div className="col-lg-4" />
+
+                <div className="col-lg-4">
+                  <center>
+                    <h3>Tipo Producto</h3>
+                  </center>
+                </div>
+                <div
+                  style={{
+                    textAlign: "right",
+                    padding: " 0px 105px 0px 0px"
+                  }}
+                  className="col-lg-4"
+                >
+                  <button
+                    style={{ borderRadius: "5px", backgroundColor: "#fff" }}
+                    onClick={this.modal_ayuda}
+                  >
+                    <TiInfoLarge />
+                  </button>
+                </div>
               </div>
               <div className="content">
                 <Col md={12}>
@@ -347,7 +395,7 @@ class CrearTipoProducto extends Component {
                             type="submit"
                             className="btn btn-success float-center"
                           >
-                            Aceptar
+                            Guardar
                           </button>
                         </div>
                       </div>
@@ -364,10 +412,30 @@ class CrearTipoProducto extends Component {
           )}
         </Formik>
         <br />
-        <br />
+
         <Col md={12}>
           <Card className="flex-row">
             <CardBody>
+              <div align="right">
+                <div className="col-4">
+                  <MdSearch
+                    height="35"
+                    width="55"
+                    size="2"
+                    className="cr-search-form__icon-search text-secondary"
+                  />
+                  <Input
+                    type="search"
+                    className="cr-search-form__input"
+                    placeholder="Buscar..."
+                    onKeyUp={({ target }) =>
+                      this.setState({
+                        parametro: target.value.toLowerCase()
+                      })
+                    }
+                  />
+                </div>
+              </div>
               <div className="row">
                 <div className="col-12">
                   <Tabla
@@ -390,6 +458,8 @@ class CrearTipoProducto extends Component {
           abrir_modal={this.state.abrir_modal}
           tipoproducto={this.state.tipoproducto}
         />
+
+        <AyudaTipoProducto ayuda_modal={this.state.ayuda_modal} />
         <NotificationSystem
           dismissible={false}
           ref={notificationSystem =>

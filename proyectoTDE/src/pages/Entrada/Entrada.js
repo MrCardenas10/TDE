@@ -14,13 +14,15 @@ import {
 } from "react-icons/lib/md";
 import NotificationSystem from "react-notification-system";
 import { NOTIFICATION_SYSTEM_STYLE } from "utils/constants";
+import { TiInfoLarge } from "react-icons/lib/ti";
+import AyudaEntrada from "./AyudaEntrada";
 
 const EntradavSchema = Yup.object().shape({
   motivo: Yup.string()
     .min(2, "Por favor explique mejor el motivo de su visita")
     .max(250, "Sea más sencillo en el motivo de la visita")
-    .required("Required"),
-  id_visitante: Yup.string().required("Required")
+    .required("Es necesario que escriba el motivo de la visita"),
+  id_visitante: Yup.string().required("El visitante es requerido")
   // id_persona: Yup.string().required("Required")
 });
 
@@ -34,7 +36,8 @@ export default class Entrada extends Component {
     super(props);
     this.state = {
       entrada: [],
-      parametro: ""
+      parametro: "",
+      ayuda_modal: false
     };
   }
 
@@ -119,6 +122,14 @@ export default class Entrada extends Component {
     }
   }
 
+  modal_ayuda = e => {
+    e.preventDefault();
+    this.setState({
+      ayuda_modal: true,
+      abrir_modal: false
+    });
+  };
+
   guardar(value) {
     axios({
       method: "post",
@@ -133,6 +144,9 @@ export default class Entrada extends Component {
       }
     }).then(respuesta => {
       let datos = respuesta.data;
+      this.setState({
+        ayuda_modal: false
+      });
       if (datos.ok) {
         document.getElementById("registro").reset();
         setTimeout(() => {
@@ -189,13 +203,29 @@ export default class Entrada extends Component {
     }
     return (
       <div>
-        <br />
-        <br />
-        <center>
-          <h1>Registrar Entrada Visitante</h1>
-        </center>
-        <br />
-        <br />
+        <div className="row">
+          <div className="col-lg-4" />
+
+          <div className="col-lg-4">
+            <center>
+              <h3>Entrada Visitante</h3>
+            </center>
+          </div>
+          <div
+            style={{
+              textAlign: "right",
+              padding: " 0px 105px 0px 0px"
+            }}
+            className="col-lg-4"
+          >
+            <button
+              style={{ borderRadius: "5px", backgroundColor: "#fff" }}
+              onClick={this.modal_ayuda}
+            >
+              <TiInfoLarge />
+            </button>
+          </div>
+        </div>
 
         <Formik
           initialValues={this.entrada2}
@@ -213,14 +243,14 @@ export default class Entrada extends Component {
                       <div className="col-2 form-group" />
 
                       <div className="col-4 form-group">
-                        <label>Motivo</label>
+                        <label>Motivo*</label>
                         <Field name="motivo" className="form-control" />
                         {errors.motivo && touched.motivo ? (
                           <div className="text-danger">{errors.motivo}</div>
                         ) : null}
                       </div>
                       <div className="col-4 form-group">
-                        <label>Numero del Visitante</label>
+                        <label>Nombre del Visitante*</label>
                         <VisitanteSelect />
                         {errors.id_visitante && touched.id_visitante ? (
                           <div className="text-danger">
@@ -241,19 +271,27 @@ export default class Entrada extends Component {
                     <div className="row">
                       <div className="col-4 from-group" />
                       <div className="col-4 from-group">
-                        <br />
                         <center>
                           <button type="submit" className="btn btn-success">
                             Entrar
                           </button>
                         </center>
                       </div>
+
                       <div className="col-4 from-group" />
                     </div>
-                    <br />
-                    <br />
-                    <br />
-                    <br />
+                    <div className="row">
+                      <div align="right" className="col-12 text-red">
+                        <label>Los campos con (*) son obligatorios</label>
+                      </div>
+                    </div>
+                  </CardBody>
+                </Card>
+              </Col>
+              <br />
+              <Col md={12}>
+                <Card className="flex-row">
+                  <CardBody>
                     <div className="row">
                       <div className="col-4" />
                       <div className="col-4" />
@@ -277,7 +315,7 @@ export default class Entrada extends Component {
                       </div>
                     </div>
                     <br />
-                    <br />
+
                     <div className="row">
                       <div className="col-12">
                         <Tabla
@@ -307,6 +345,8 @@ export default class Entrada extends Component {
             </Form>
           )}
         </Formik>
+
+        <AyudaEntrada ayuda_modal={this.state.ayuda_modal} />
 
         <NotificationSystem
           dismissible={false}

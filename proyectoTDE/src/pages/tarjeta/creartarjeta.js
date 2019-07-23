@@ -5,17 +5,19 @@ import * as Yup from "yup";
 import axios from "axios";
 import { URL } from "./../../config/config";
 import EstudianteSelect from "./../../components/EstudianteSelect";
-import { Card, Col, CardBody } from "reactstrap";
+import { Card, Col, CardBody, Input } from "reactstrap";
 import { MdImportantDevices } from "react-icons/lib/md";
 import { TiThumbsDown, TiThumbsUp } from "react-icons/lib/ti";
 import NotificationSystem from "react-notification-system";
 import { NOTIFICATION_SYSTEM_STYLE } from "utils/constants";
 import Tabla from "./../../components/Tabla";
-import { TiEdit } from "react-icons/lib/ti";
+import { MdSearch } from "react-icons/lib/md";
+import { TiInfoLarge } from "react-icons/lib/ti";
+import AyudaTarjeta from "./AyudaTarjeta";
 
 const TarjetaSchema = Yup.object().shape({
-  id_persona: Yup.string().required("Required"),
-  cod_tarjeta: Yup.string().required("Required")
+  id_persona: Yup.string().required("Campo obligatorio"),
+  cod_tarjeta: Yup.string().required("Campo obligatorio")
 });
 
 class creartarjeta extends Component {
@@ -23,13 +25,14 @@ class creartarjeta extends Component {
     super(props);
     this.state = {
       tarjetas: [],
-      parametro: ""
+      parametro: "",
+      ayuda_modal: false
     };
   }
 
   tarjeta = {
     cod_tarjeta: "",
-    id_estudiante: ""
+    id_persona: ""
   };
 
   componentWillReceiveProps({ breakpoint }) {
@@ -49,6 +52,9 @@ class creartarjeta extends Component {
   }
 
   guardar(value) {
+    this.setState({
+      ayuda_modal: false
+    });
     axios({
       method: "post",
       url: `${URL}/Tarjeta`,
@@ -112,8 +118,7 @@ class creartarjeta extends Component {
           estado,
           id_persona,
           nombres,
-          apellidos,
-          email
+          apellidos
         } = d;
         let obj = {
           cod_tarjeta,
@@ -122,19 +127,19 @@ class creartarjeta extends Component {
           id_persona,
           nombres,
           apellidos,
-          email,
+
           botones: [
             estado === 1
               ? this.boton_estado(
-                  "btn btn-danger bordered",
-                  <TiThumbsDown />,
-                  cod_tarjeta
-                )
+                "btn btn-danger bordered",
+                <TiThumbsDown />,
+                cod_tarjeta
+              )
               : this.boton_estado(
-                  "btn btn-success",
-                  <TiThumbsUp />,
-                  cod_tarjeta
-                ),
+                "btn btn-success",
+                <TiThumbsUp />,
+                cod_tarjeta
+              ),
             <span> </span>
           ]
         };
@@ -146,6 +151,13 @@ class creartarjeta extends Component {
     });
   }
 
+  modal_ayuda = e => {
+    e.preventDefault();
+    this.setState({
+      ayuda_modal: true
+    });
+  };
+
   cambiar_estado(id) {
     axios({
       method: "delete",
@@ -156,6 +168,9 @@ class creartarjeta extends Component {
     })
       .then(respuesta => {
         let r = respuesta.data;
+        this.setState({
+          ayuda_modal: false
+        });
         if (r.ok) {
           this.checkBreakpoint(this.props.breakpoint);
 
@@ -166,7 +181,7 @@ class creartarjeta extends Component {
 
             this.notificationSystem.addNotification({
               title: <MdImportantDevices />,
-              message: "Se cambio el estado Con Exito",
+              message: "Se cambió el estado con éxito",
               level: "success"
             });
           }, 100);
@@ -208,7 +223,6 @@ class creartarjeta extends Component {
           <td>{e.id_persona}</td>
           <td>{e.nombres}</td>
           <td>{e.apellidos}</td>
-          <td>{e.email}</td>
           <td>{e.estado}</td>
           <td>{e.botones}</td>
         </tr>
@@ -232,8 +246,9 @@ class creartarjeta extends Component {
     if (this.state.parametro !== "") {
       data.forEach(v => {
         if (
-          v.tarjeta.toLowerCase().includes(this.state.parametro) ||
-          v.id_persona.toLowerCase().includes(this.state.parametro)
+          v.apellidos.toLowerCase().includes(this.state.parametro) ||
+          v.estado.toLowerCase().includes(this.state.parametro) ||
+          v.nombres.toLowerCase().includes(this.state.parametro)
         ) {
           ds.push(v);
         }
@@ -252,8 +267,28 @@ class creartarjeta extends Component {
         >
           {({ errors, touched, values }) => (
             <Form id="registro">
-              <div align="center">
-                <h3>Tarjetas</h3>
+              <div className="row">
+                <div className="col-lg-4" />
+
+                <div className="col-lg-4">
+                  <center>
+                    <h3>Tarjetas</h3>
+                  </center>
+                </div>
+                <div
+                  style={{
+                    textAlign: "right",
+                    padding: " 0px 105px 0px 0px"
+                  }}
+                  className="col-lg-4"
+                >
+                  <button
+                    style={{ borderRadius: "5px", backgroundColor: "#fff" }}
+                    onClick={this.modal_ayuda}
+                  >
+                    <TiInfoLarge />
+                  </button>
+                </div>
               </div>
               <div className="content">
                 <Col md={12}>
@@ -269,10 +304,10 @@ class creartarjeta extends Component {
                             </div>
                           ) : null}
                         </div>
-                        <div className="col-4 form-group">
+                        <div align="center" className="col-6 form-group">
                           <label>Estudiante *</label>
                           <EstudianteSelect />
-                          {errors.id_persona && values.id_persona === "" ? (
+                          {errors.id_persona && touched.id_persona ? (
                             <div className="text-danger">
                               {errors.id_persona}
                             </div>
@@ -305,6 +340,26 @@ class creartarjeta extends Component {
         <Col md={12}>
           <Card className="flex-row">
             <CardBody>
+              <div align="right">
+                <div className="col-4">
+                  <MdSearch
+                    height="35"
+                    width="55"
+                    size="2"
+                    className="cr-search-form__icon-search text-secondary"
+                  />
+                  <Input
+                    type="search"
+                    className="cr-search-form__input"
+                    placeholder="Buscar..."
+                    onKeyUp={({ target }) =>
+                      this.setState({
+                        parametro: target.value.toLowerCase()
+                      })
+                    }
+                  />
+                </div>
+              </div>
               <div className="row">
                 <div className="col-12">
                   <Tabla
@@ -316,7 +371,7 @@ class creartarjeta extends Component {
                       "Doc Estudiante",
                       "Nombres",
                       "Apellidos",
-                      "Correo",
+
                       "Estado"
                     ]}
                     propiedades={[
@@ -325,7 +380,7 @@ class creartarjeta extends Component {
                       "id_persona",
                       "nombres",
                       "apellidos",
-                      "email",
+
                       "estado",
                       "botones"
                     ]}
@@ -335,6 +390,8 @@ class creartarjeta extends Component {
             </CardBody>
           </Card>
         </Col>
+
+        <AyudaTarjeta ayuda_modal={this.state.ayuda_modal} />
 
         <NotificationSystem
           dismissible={false}

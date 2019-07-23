@@ -3,19 +3,21 @@ import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import axios from "axios";
 import { URL } from "./../../config/config";
-import { Card, CardBody, Col } from "reactstrap";
+import { Card, CardBody, Col, Input } from "reactstrap";
 import NotificationSystem from "react-notification-system";
 import { NOTIFICATION_SYSTEM_STYLE } from "utils/constants";
 import Tabla from "./../../components/Tabla";
-import { MdImportantDevices } from "react-icons/lib/md";
+import { MdImportantDevices, MdSearch } from "react-icons/lib/md";
 import ModalUnidadMedida from "./ModalUnidadMedida";
 import { TiEdit } from "react-icons/lib/ti";
+import { TiInfoLarge } from "react-icons/lib/ti";
+import AyudaUnidadMedida from "./AyudaUnidadMedida";
 
 const UnidadSchema = Yup.object().shape({
   unidad_medida: Yup.string()
     .min(2, "Too Short!")
     .max(50, "Too Long!")
-    .required("Required")
+    .required("Campo obligatorio")
 });
 
 class CrearUnidadMedida extends Component {
@@ -25,9 +27,14 @@ class CrearUnidadMedida extends Component {
       unidades: [],
       parametro: "",
       abrir_modal: false,
-      unidad_medida: []
+      unidad_medida: [],
+      ayuda_modal:false
     };
   }
+
+  unidad = {
+    unidad_medida: ""
+  };
 
   componentWillReceiveProps({ breakpoint }) {
     if (breakpoint !== this.props.breakpoint) {
@@ -64,20 +71,18 @@ class CrearUnidadMedida extends Component {
       e.preventDefault();
       this.checkBreakpoint(this.props.breakpoint);
 
-    setTimeout(() => {
-      if (!this.notificationSystem) {
-        return;
-      }
+      setTimeout(() => {
+        if (!this.notificationSystem) {
+          return;
+        }
 
-      this.notificationSystem.addNotification({
-        title: <MdImportantDevices />,
-        message: "En este campo solo se letras",
-        level: "error"
-      });
-    }, 100);
+        this.notificationSystem.addNotification({
+          title: <MdImportantDevices />,
+          message: "En este campo solo se letras",
+          level: "error"
+        });
+      }, 100);
     }
-    
-  
   }
 
   onChangeNumero(e) {
@@ -90,7 +95,7 @@ class CrearUnidadMedida extends Component {
         if (!this.notificationSystem) {
           return;
         }
-  
+
         this.notificationSystem.addNotification({
           title: <MdImportantDevices />,
           message: "En este campo solo se admiten numeros",
@@ -98,11 +103,13 @@ class CrearUnidadMedida extends Component {
         });
       }, 100);
     }
-   
-    
   }
 
   guardar(value) {
+    this.setState({
+      ayuda_modal: false,
+      abrir_modal:false
+    });
     axios({
       method: "post",
       url: `${URL}/unidadmedida`,
@@ -179,6 +186,14 @@ class CrearUnidadMedida extends Component {
     });
   }
 
+  modal_ayuda = e => {
+    e.preventDefault();
+    this.setState({
+      ayuda_modal: true,
+      abrir_modal: false
+    });
+  };
+
   modal_unidad(id) {
     axios({
       method: "get",
@@ -191,7 +206,8 @@ class CrearUnidadMedida extends Component {
         let r = respuesta.data;
         this.setState({
           unidad_medida: r.data,
-          abrir_modal: true
+          abrir_modal: true,
+          ayuda_modal:false
         });
       })
       .catch(error => {
@@ -236,7 +252,10 @@ class CrearUnidadMedida extends Component {
     var ds = [];
     if (this.state.parametro !== "") {
       data.forEach(v => {
-        if (v.unidadmedida.toLowerCase().includes(this.state.parametro)) {
+        if (
+          v.unidad_medida.toLowerCase().includes(this.state.parametro) ||
+          v.unidad_medida.toLowerCase().includes(this.state.parametro)
+        ) {
           ds.push(v);
         }
       });
@@ -254,8 +273,28 @@ class CrearUnidadMedida extends Component {
         >
           {({ errors, touched }) => (
             <Form id="limpiar_campos">
-              <div align="center">
-                <h3>Unidad de Medida</h3>
+              <div className="row">
+                <div className="col-lg-4" />
+
+                <div className="col-lg-4">
+                  <center>
+                    <h3>Unidad de Medida</h3>
+                  </center>
+                </div>
+                <div
+                  style={{
+                    textAlign: "right",
+                    padding: " 0px 105px 0px 0px"
+                  }}
+                  className="col-lg-4"
+                >
+                  <button
+                    style={{ borderRadius: "5px", backgroundColor: "#fff" }}
+                    onClick={this.modal_ayuda}
+                  >
+                    <TiInfoLarge />
+                  </button>
+                </div>
               </div>
               <div className="content">
                 <Col md={12}>
@@ -265,7 +304,8 @@ class CrearUnidadMedida extends Component {
                         <div className="col-3 form-group" />
                         <div align="center" className="col-6 form-group">
                           <label>Unidad de Medida * </label>
-                          <Field onKeyPress={(e) => this.onChangeLetras(e)}
+                          <Field
+                            onKeyPress={e => this.onChangeLetras(e)}
                             name="unidad_medida"
                             className="form-control"
                           />
@@ -303,6 +343,26 @@ class CrearUnidadMedida extends Component {
         <Col md={12}>
           <Card className="flex-row">
             <CardBody>
+              <div align="right">
+                <div className="col-4">
+                  <MdSearch
+                    height="35"
+                    width="55"
+                    size="2"
+                    className="cr-search-form__icon-search text-secondary"
+                  />
+                  <Input
+                    type="search"
+                    className="cr-search-form__input"
+                    placeholder="Buscar..."
+                    onKeyUp={({ target }) =>
+                      this.setState({
+                        parametro: target.value.toLowerCase()
+                      })
+                    }
+                  />
+                </div>
+              </div>
               <div className="row">
                 <div className="col-12">
                   <Tabla
@@ -322,6 +382,8 @@ class CrearUnidadMedida extends Component {
           unidad_medida={this.state.unidad_medida}
         />
 
+        <AyudaUnidadMedida ayuda_modal={this.state.ayuda_modal} />
+
         <NotificationSystem
           dismissible={false}
           ref={notificationSystem =>
@@ -330,91 +392,6 @@ class CrearUnidadMedida extends Component {
           style={NOTIFICATION_SYSTEM_STYLE}
         />
       </div>
-      // <div>
-      //   <Formik
-      //     initialValues={this.unidad}
-      //     validationSchema={UnidadSchema}
-      //     onSubmit={value => {
-      //       this.guardar(value);
-      //     }}
-      //   >
-      //     {({ errors, touched }) => (
-      //       <Form id="registro">
-      //         <div align="center">
-      //           <h3>Unidades de Medida </h3>
-      //         </div>
-      //         <div className="content">
-      //           <Col md={12}>
-      //             <Card className="flex-row">
-      //               <CardBody>
-      //                 <div className="row">
-      //                   <div className="col-3 form-group">
-      //                     <div align="center" className="col-6 form-group">
-      //                       <label>Unidad de Medida *</label>
-      //                       <Field
-      //                         name="unidad_medida"
-      //                         className="form-control"
-      //                       />
-      //                       {errors.unidad_medida && touched.unidad_medida ? (
-      //                         <div className="text-danger">
-      //                           {errors.unidad_medida}
-      //                         </div>
-      //                       ) : null}
-      //                     </div>
-      //                     <div className="col-3 form-group" />
-      //                     <div align="center" className="col-12 form-group">
-      //                       <button
-      //                         type="submit"
-      //                         className="btn btn-success float-center"
-      //                       >
-      //                         Crear
-      //                       </button>
-      //                     </div>
-      //                   </div>
-      //                   <div className="col-4" />
-      //                   <div align="right" className="col-12 text-red">
-      //                     <label>Los campos con (*) son obligatorios</label>
-      //                   </div>
-      //                 </div>
-      //               </CardBody>
-      //             </Card>
-      //           </Col>
-      //         </div>
-      //       </Form>
-      //     )}
-      //   </Formik>
-      //   <br />
-
-      //   <Col md={12}>
-      //     <Card className="flex-row">
-      //       <CardBody>
-      //         <br />
-
-      //         <div className="row">
-      //           <div className="col-12">
-      //             <Tabla
-      //               datos={data}
-      //               botones
-      //               titulos={["Unidad de medida"]}
-      //               propiedades={["unidad_medida", "botones"]}
-      //             />
-      //           </div>
-      //         </div>
-      //       </CardBody>
-      //     </Card>
-      //   </Col>
-      //   <ModalUnidadMedida
-      //     abrir_modal={this.state.abrir_modal}
-      //     unidad_medida={this.state.unidad_medida}
-      //   />
-      //   <NotificationSystem
-      //     dismissible={false}
-      //     ref={notificationSystem =>
-      //       (this.notificationSystem = notificationSystem)
-      //     }
-      //     style={NOTIFICATION_SYSTEM_STYLE}
-      //   />
-      // </div>
     );
   }
 }

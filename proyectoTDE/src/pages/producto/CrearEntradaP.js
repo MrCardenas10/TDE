@@ -3,14 +3,17 @@ import axios from "axios";
 import { Formik, Form, Field, handleChange } from "formik";
 // import Yup from "yup";
 import { URL } from "./../../config/config";
-import { Card, Col, CardBody } from "reactstrap";
+import Tabla from "./../../components/Tabla";
+import { Card, CardBody, Col, Input } from "reactstrap";
 import {
   MdImportantDevices,
   // MdCardGiftcard,
-  MdLoyalty
+  MdSearch
 } from "react-icons/lib/md";
 import NotificationSystem from "react-notification-system";
 import { NOTIFICATION_SYSTEM_STYLE } from "utils/constants";
+import { TiInfoLarge } from "react-icons/lib/ti";
+import AyudaEntradaP from "./AyudaEntradaP";
 // import SelectTipo from "./../../components/SelectTipo";
 
 // const VentaSchema = Yup.object().shape({
@@ -23,11 +26,14 @@ class CrearEntradaP extends Component {
     super(props);
     this.state = {
       productos: {},
+      entrada: [],
       cantidad: "",
       entradap: {
         id_producto: "",
         cantidad: ""
-      }
+      },
+      parametro: "",
+      ayuda_modal: false
     };
 
     this.handleChange = this.handleChange.bind(this);
@@ -108,19 +114,19 @@ class CrearEntradaP extends Component {
           } else {
             productos[r.data.id_producto].cantidad += Number(valCant);
           }
-          this.setState({ productos });
+          this.setState({ productos, ayuda_modal: false });
           document.getElementById("hola").reset();
         } else if (r.ok === false) {
           if (!this.notificationSystem) {
             return;
           }
 
-          this.notificationSystem.addNotification({
-            title: <MdImportantDevices />,
-            message: r.error,
-            level: "error"
-          });
-          document.getElementById("hola").reset();
+          // this.notificationSystem.addNotification({
+          //   title: <MdImportantDevices />,
+          //   message: r.error,
+          //   level: "error"
+          // });
+          // document.getElementById("hola").reset();
         }
         /*                if (r.ok) {
                       var cant2 = Number(document.getElementById("txt_cant_prod").value) || 0;
@@ -207,7 +213,60 @@ class CrearEntradaP extends Component {
     return prds;
   }
 
+  llamar_listar() {
+    axios({
+      method: "get",
+      url: `${URL}/entrada`,
+      headers: {
+        Authorization: "bearer " + localStorage.token
+      }
+    }).then(respuesta => {
+      let r = respuesta.data;
+      let entrada = [];
+      r.data.forEach(d => {
+        const { cantidad_producto, fecha_entrada, producto } = d;
+        let obj = {
+          cantidad_producto,
+          fecha_entrada,
+          producto
+        };
+        entrada.push(obj);
+      });
+      this.setState({
+        entrada
+      });
+    });
+  }
+
+  modal_ayuda = e => {
+    e.preventDefault();
+    this.setState({
+      ayuda_modal: true
+    });
+  };
+
+  componentDidMount() {
+    this.llamar_listar();
+  }
+
+  listare() {
+    if (this.state.entrada.length > 0) {
+      return this.state.entrada.map((e, i) => (
+        <tr key={i}>
+          <br />
+          <td>{e.cantidad_producto}</td>
+          <td>{e.producto}</td>
+          <td>{e.fecha_entrada}</td>
+          <br />
+        </tr>
+      ));
+    }
+  }
+
   guardar() {
+    this.setState({
+      ayuda_modal: false
+    });
     let data = [];
     let op = Object.keys(this.state.productos);
     op.forEach(k => {
@@ -237,9 +296,10 @@ class CrearEntradaP extends Component {
             level: "success"
           });
         }, 100);
-      } else {
         document.getElementById("hola").reset();
-
+        this.llamar_listar();
+        this.state.productos = [];
+      } else {
         setTimeout(() => {
           if (!this.notificationSystem) {
             return;
@@ -256,6 +316,20 @@ class CrearEntradaP extends Component {
   }
 
   render() {
+    var data = this.state.entrada;
+    var ds = [];
+    if (this.state.parametro !== "") {
+      data.forEach(v => {
+        if (
+          v.producto.toLowerCase().includes(this.state.parametro) ||
+          v.fecha_entrada.toLowerCase().includes(this.state.parametro)
+        ) {
+          ds.push(v);
+        }
+      });
+      data = ds;
+    }
+
     return (
       <div>
         <Formik
@@ -267,8 +341,28 @@ class CrearEntradaP extends Component {
         >
           {({ errors, touched, values, handleChange }) => (
             <Col md={12}>
-              <div align="center">
-                <h3 className="align-center">Entrada de Productos</h3>
+              <div className="row">
+                <div className="col-lg-4" />
+
+                <div className="col-lg-4">
+                  <center>
+                    <h3>Entrada Productos</h3>
+                  </center>
+                </div>
+                <div
+                  style={{
+                    textAlign: "right",
+                    padding: " 0px 105px 0px 0px"
+                  }}
+                  className="col-lg-4"
+                >
+                  <button
+                    style={{ borderRadius: "5px", backgroundColor: "#fff" }}
+                    onClick={this.modal_ayuda}
+                  >
+                    <TiInfoLarge />
+                  </button>
+                </div>
               </div>
               <Card className="flex-row">
                 <CardBody>
@@ -301,6 +395,11 @@ class CrearEntradaP extends Component {
                               className="form-control"
                               value={this.cantidad}
                             />
+                            {errors.txt_cant_prod && touched.txt_cant_prod ? (
+                              <div className="text-danger">
+                                {errors.txt_cant_prod}
+                              </div>
+                            ) : null}
                           </div>
                         </div>
                         <div className="row">
@@ -313,14 +412,6 @@ class CrearEntradaP extends Component {
                             </button>
                           </div>
                           <div className="col-2 form-group" />
-                          <div className="col-2 form-group">
-                            <button
-                              type="button"
-                              className="btn btn-success float-center  "
-                            >
-                              Agregar
-                            </button>
-                          </div>
                         </div>
                       </div>
                     </Form>
@@ -343,6 +434,52 @@ class CrearEntradaP extends Component {
             </Col>
           )}
         </Formik>
+        <br />
+
+        <Col md={12}>
+          <Card className="demo-icons">
+            <CardBody>
+              <div className="row">
+                <div className="col-4" />
+                <div className="col-4" />
+                <div className="col-4">
+                  <MdSearch
+                    height="35"
+                    width="55"
+                    size="2"
+                    className="cr-search-form__icon-search text-secondary"
+                  />
+                  <Input
+                    type="search"
+                    className="cr-search-form__input"
+                    placeholder="Buscar..."
+                    onKeyUp={({ target }) =>
+                      this.setState({
+                        parametro: target.value.toLowerCase()
+                      })
+                    }
+                  />
+                </div>
+              </div>
+              <br />
+
+              <div className="row">
+                <div className="col-12">
+                  <Tabla
+                    datos={data}
+                    titulos={["Producto", "Cantidad", "Fecha de Entrada"]}
+                    propiedades={[
+                      "producto",
+                      "cantidad_producto",
+                      "fecha_entrada"
+                    ]}
+                  />
+                </div>
+              </div>
+            </CardBody>
+          </Card>
+        </Col>
+        <AyudaEntradaP ayuda_modal={this.state.ayuda_modal} />
 
         <NotificationSystem
           dismissible={false}

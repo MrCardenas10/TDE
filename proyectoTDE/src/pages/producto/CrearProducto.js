@@ -11,21 +11,23 @@ import { Card, CardBody, Col } from "reactstrap";
 import { MdImportantDevices } from "react-icons/lib/md";
 import NotificationSystem from "react-notification-system";
 import { NOTIFICATION_SYSTEM_STYLE } from "utils/constants";
+import { TiInfoLarge } from "react-icons/lib/ti";
+import AyudaProducto from "./AyudaProducto";
 
 const ProductoSchema = Yup.object().shape({
   id_producto: Yup.string()
     .min(2, "Too Short!")
     .max(50, "Too Long!")
-    .required("Required"),
+    .required("Campo obligatorio"),
   producto: Yup.string()
     .min(2, "Too Short!")
     .max(50, "Too Long!")
-    .required("Required"),
-  precio: Yup.string().required("Required"),
-  id_presentacion: Yup.string().required("Required"),
-  id_marca: Yup.string().required("Required"),
-  id_tipo_producto: Yup.string().required("Required"),
-  id_unidad_medida: Yup.string().required("Required")
+    .required("Campo obligatorio"),
+  precio: Yup.string().required("Campo obligatorio"),
+  id_presentacion: Yup.string().required("Campo obligatorio"),
+  id_marca: Yup.string().required("Campo obligatorio"),
+  id_tipo_producto: Yup.string().required("Campo obligatorio"),
+  id_unidad_medida: Yup.string().required("Campo obligatorio")
 });
 
 class CrearProducto extends Component {
@@ -35,11 +37,13 @@ class CrearProducto extends Component {
       sweetShow: false,
       sweetTitle: "",
       sweetText: "",
-      sweetType: ""
+      sweetType: "",
+      ayuda_modal: false
     };
   }
 
   producto = {
+    id_producto: "",
     producto: "",
     precio: "",
 
@@ -118,7 +122,17 @@ class CrearProducto extends Component {
     }
   }
 
+  modal_ayuda = e => {
+    e.preventDefault();
+    this.setState({
+      ayuda_modal: true
+    });
+  };
+
   guardar(value) {
+    this.setState({
+      ayuda_modal: false
+    });
     axios({
       method: "post",
       url: `${URL}/producto`,
@@ -139,7 +153,7 @@ class CrearProducto extends Component {
 
           this.notificationSystem.addNotification({
             title: <MdImportantDevices />,
-            message: "Se registro Con Exito",
+            message: "Se registró con éxito",
             level: "success"
           });
         }, 100);
@@ -174,16 +188,36 @@ class CrearProducto extends Component {
         >
           {({ errors, touched }) => (
             <Form id="limpiar_campos">
-              <center>
-                <h3>Crear Producto</h3>
-              </center>
+              <div className="row">
+                <div className="col-lg-4" />
+
+                <div className="col-lg-4">
+                  <center>
+                    <h3>Crear Producto</h3>
+                  </center>
+                </div>
+                <div
+                  style={{
+                    textAlign: "right",
+                    padding: " 0px 105px 0px 0px"
+                  }}
+                  className="col-lg-4"
+                >
+                  <button
+                    style={{ borderRadius: "5px", backgroundColor: "#fff" }}
+                    onClick={this.modal_ayuda}
+                  >
+                    <TiInfoLarge />
+                  </button>
+                </div>
+              </div>
 
               <Col md={12}>
                 <Card className="flex-row">
                   <CardBody>
                     <div className="row">
                       <div className="col-6 form-group">
-                        <label>Número Producto</label>
+                        <label>Código Producto *</label>
                         <Field
                           onKeyPress={e => this.onChangeNumero(e)}
                           name="id_producto"
@@ -198,7 +232,7 @@ class CrearProducto extends Component {
                       </div>
 
                       <div className="col-6 form-group">
-                        <label>Producto</label>
+                        <label>Producto *</label>
                         <Field
                           name="producto"
                           className="form-control"
@@ -212,7 +246,7 @@ class CrearProducto extends Component {
 
                     <div className="row">
                       <div className="col-6 form-group">
-                        <label>Precio</label>
+                        <label>Precio *</label>
                         <Field
                           onKeyPress={e => this.onChangeNumero(e)}
                           name="precio"
@@ -223,59 +257,45 @@ class CrearProducto extends Component {
                           <div className="text-danger">{errors.precio}</div>
                         ) : null}
                       </div>
-                    </div>
-
-                    <div className="row">
                       <div className="col-6 form-group">
                         <label>Presentación</label>
                         <PresentacionSelect />
-                        {errors.id_presentacion && touched.id_presentacion ? (
-                          <div className="text-danger">
-                            {errors.id_presentacion}
-                          </div>
-                        ) : null}
                       </div>
-
-                      <div className="col-6 form-group">
+                    </div>
+                    <div className="row">
+                      <div className="col-4 form-group">
                         <label>Marca</label>
                         <MarcaSelect />
-                        {errors.id_marca && touched.id_marca ? (
-                          <div className="text-danger">{errors.id_marca}</div>
-                        ) : null}
                       </div>
-                    </div>
-
-                    <div className="row">
-                      <div className="col-6 form-group">
+                      <div className="col-4 form-group">
                         <label>Tipo Producto</label>
                         <TipoProductoSelect />
-                        {errors.id_tipo_producto && touched.id_tipo_producto ? (
-                          <div className="text-danger">
-                            {errors.id_tipo_producto}
-                          </div>
-                        ) : null}
                       </div>
 
-                      <div className="col-6 form-group">
+                      <div className="col-4 form-group">
                         <label>Unidad Medida</label>
                         <UnidadMedidaSelect />
-                        {errors.id_unidad_medida && touched.id_unidad_medida ? (
-                          <div className="text-danger">
-                            {errors.id_unidad_medida}
-                          </div>
-                        ) : null}
                       </div>
                     </div>
 
                     <br />
-                    <br />
-                    <div className="col-12">
-                      <button
-                        type="submit"
-                        className="btn btn-success float-right"
-                      >
-                        Crear
-                      </button>
+                    <div className="row">
+                      <div className="col-4" />
+
+                      <div className="col-4">
+                        <center>
+                          <button type="submit" className="btn btn-success">
+                            Crear
+                          </button>
+                        </center>
+                      </div>
+                      <div className="row">
+                        <div align="right" className="col-12 text-red">
+                          <label>Los campos con (*) son obligatorios</label>
+                        </div>
+                      </div>
+
+                      <div className="col-4" />
                     </div>
                   </CardBody>
                 </Card>
@@ -285,6 +305,9 @@ class CrearProducto extends Component {
             </Form>
           )}
         </Formik>
+
+        <AyudaProducto ayuda_modal={this.state.ayuda_modal} />
+
         <NotificationSystem
           dismissible={false}
           ref={notificationSystem =>

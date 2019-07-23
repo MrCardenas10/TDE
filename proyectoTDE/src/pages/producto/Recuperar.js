@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { URL } from "./../../config/config";
 import ReactDOM from "react-dom";
-
+import TDEImage from "./../../assets/img/logo/TDE.png";
 import App from "./../../App";
 import axios from "axios";
 import { Formik, Form, Field } from "formik";
@@ -14,7 +14,7 @@ import { MdImportantDevices } from "react-icons/lib/md";
 import bn from "./../../utils/bemnames";
 
 const LoginSchema = Yup.object().shape({
-  email: Yup.string().required("Required")
+  email: Yup.string().required("El email es requerido")
 });
 
 const bem = bn.create("backgroup");
@@ -39,32 +39,32 @@ class Recuperar extends Component {
       if (datos.ok) {
         localStorage.user = value.email;
         document.getElementById("registro").reset();
-        setTimeout(() => {
-          if (!this.notificationSystem) {
-            return;
-          }
 
-          this.notificationSystem.addNotification({
-            title: <MdImportantDevices />,
-            message: "Verifique su correo en los proximos 60 minutos",
-            level: "success"
-          });
-        }, 100);
+        if (!this.notificationSystem) {
+          return;
+        }
+
+        this.notificationSystem.addNotification({
+          title: <MdImportantDevices />,
+          message: "Verifique su correo en los proximos 60 minutos",
+          level: "success"
+        });
+
         this.login = {
           email: ""
         };
       } else {
-        setTimeout(() => {
-          if (!this.notificationSystem) {
-            return;
-          }
 
-          this.notificationSystem.addNotification({
-            title: <MdImportantDevices />,
-            message: "Este correo no existe",
-            level: "error"
-          });
-        }, 100);
+        if (!this.notificationSystem) {
+          return;
+        }
+
+        this.notificationSystem.addNotification({
+          title: <MdImportantDevices />,
+          message: "Este correo no existe",
+          level: "error"
+        });
+
       }
       console.log(respuesta);
     });
@@ -87,8 +87,12 @@ class Recuperar extends Component {
                 this.logiarse(value);
               }}
             >
-              {({ errors, values }) => (
+              {({ errors, values, touched }) => (
                 <Form id="registro">
+                  <center>
+                    <img src={TDEImage} width="200" height="230" alt="TDE" />
+                  </center>
+
                   <br />
 
                   <label>Correo:</label>
@@ -98,7 +102,7 @@ class Recuperar extends Component {
                     name="email"
                     className="form-control"
                   />
-                  {errors.email && values.email ? (
+                  {errors.email && touched.email ? (
                     <div className="text-danger">{errors.email}</div>
                   ) : null}
                   <br />

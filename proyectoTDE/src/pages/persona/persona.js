@@ -3,16 +3,24 @@ import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import axios from "axios";
 import ModalPersona from "./ModalPersona";
+import VerPersona from "./VerPersona";
 import RolSelect from "./../../components/RolSelect";
 import AcudienteSelect from "./../../components/AcudienteSelect";
 import SelectTipoDoc from "./../../components/SelectTipoDoc";
 import { URL } from "./../../config/config";
 import { Card, Col, CardBody, Input } from "reactstrap";
-import { MdImportantDevices } from "react-icons/lib/md";
-import { TiThumbsDown, TiThumbsUp } from "react-icons/lib/ti";
+import {
+  MdImportantDevices,
+  MdSentimentVeryDissatisfied
+} from "react-icons/lib/md";
+import { TiThumbsDown, TiThumbsUp, TiEyeOutline } from "react-icons/lib/ti";
 import NotificationSystem from "react-notification-system";
 import { NOTIFICATION_SYSTEM_STYLE } from "utils/constants";
 import Tabla from "./../../components/Tabla";
+import "bootstrap/dist/css/bootstrap.min.css";
+import { TiInfoLarge } from "react-icons/lib/ti";
+import AyudaPersona from "./AyudaPersona";
+
 import { TiEdit } from "react-icons/lib/ti";
 import {
   // MdCardGiftcard,
@@ -39,20 +47,24 @@ class persona extends Component {
       personas: [],
       persona: [],
       parametro: "",
-      abrir_modal: false
+      abrir_modal: false,
+      verPersona: false,
+      ayuda_modal: false
     };
   }
 
   persona2 = {
-    id_persona: "",
+    id_persona: 0,
     nombres: "",
     apellidos: "",
     email: "",
     password: "",
+    passwordcon: "",
     telefono: "",
     genero: "",
     rol: "",
-    id_tipo_documento: ""
+    id_tipo_documento: "",
+    numero: [1, 2, 3, 4, 5, 6, 7, 8, 9, 0]
   };
 
   componentWillReceiveProps({ breakpoint }) {
@@ -71,7 +83,12 @@ class persona extends Component {
     }
   }
 
-  handleSubmit(value) {
+  guardar(value) {
+    this.setState({
+      verPersona: false,
+      abrir_modal: false,
+      ayuda_modal: false
+    });
     console.log("hola");
     axios({
       method: "post",
@@ -82,37 +99,35 @@ class persona extends Component {
       data: value
     }).then(respuesta => {
       let datos = respuesta.data;
-
+      console.log(datos);
       if (datos.ok) {
-        this.checkBreakpoint(this.props.breakpoint);
         document.getElementById("registro").reset();
+        this.checkBreakpoint(this.props.breakpoint);
 
-        setTimeout(() => {
-          if (!this.notificationSystem) {
-            return;
-          }
+        if (!this.notificationSystem) {
+          return;
+        }
 
-          this.notificationSystem.addNotification({
-            title: <MdImportantDevices />,
-            message: datos.mensaje,
-            level: "success"
-          });
-        }, 100);
+        this.notificationSystem.addNotification({
+          title: <MdImportantDevices />,
+          message: datos.mensaje,
+          level: "success"
+        });
+
         this.llamar_listar();
       } else {
         this.checkBreakpoint(this.props.breakpoint);
 
-        setTimeout(() => {
-          if (!this.notificationSystem) {
-            return;
-          }
+        if (!this.notificationSystem) {
+          return;
+        }
 
-          this.notificationSystem.addNotification({
-            title: <MdImportantDevices />,
-            message: datos.error,
-            level: "error"
-          });
-        }, 100);
+        this.notificationSystem.addNotification({
+          title: <MdSentimentVeryDissatisfied />,
+          message: "Problemas con el registro",
+          level: "error"
+        });
+
         document.getElementById("registro").reset();
       }
     });
@@ -130,41 +145,25 @@ class persona extends Component {
 
       let personas = [];
       r.data.forEach(d => {
-        const {
-          id_persona,
-          nombres,
-          apellidos,
-          email,
-          estado,
-          password,
-          telefono,
-          genero,
-          rol,
-          tipo_documento
-        } = d;
+        const { id_persona, nombres, apellidos, estado, rol } = d;
         let obj = {
           id_persona,
           nombres,
           apellidos,
-          email,
-          password,
           estado: estado === 1 ? "Activo" : "Inactivo",
-          telefono,
-          genero,
           rol,
-          tipo_documento,
           botones: [
             estado === 1
               ? this.boton_estado(
-                  "btn btn-danger bordered",
-                  <TiThumbsDown />,
-                  id_persona
-                )
+                "btn btn-danger bordered",
+                <TiThumbsDown />,
+                id_persona
+              )
               : this.boton_estado(
-                  "btn btn-success",
-                  <TiThumbsUp />,
-                  id_persona
-                ),
+                "btn btn-success",
+                <TiThumbsUp />,
+                id_persona
+              ),
             <span> </span>,
             estado === 1 ? (
               <button
@@ -173,7 +172,15 @@ class persona extends Component {
               >
                 <TiEdit />
               </button>
-            ) : null
+            ) : null,
+            <span> </span>,
+            <button
+              onClick={() => this.ver_persona(id_persona)}
+              className="btn btn-secondary"
+              style={{ backgroundColor: "#6c757d", borderColor: "gray" }}
+            >
+              <TiEyeOutline />
+            </button>
           ]
         };
         personas.push(obj);
@@ -200,7 +207,9 @@ class persona extends Component {
         let r = respuesta.data;
         this.setState({
           persona: r.data,
-          abrir_modal: true
+          abrir_modal: true,
+          verPersona: false,
+          ayuda_modal: false
         });
       })
       .catch(error => {
@@ -208,11 +217,47 @@ class persona extends Component {
       });
   }
 
+  ver_persona(id) {
+    axios({
+      method: "get",
+      url: `${URL}/Persona/${id}`,
+      headers: {
+        Authorization: "bearer " + localStorage.token
+      }
+    })
+      .then(respuesta => {
+        let r = respuesta.data;
+        this.setState({
+          persona: r.data,
+          verPersona: true,
+          abrir_modal: false,
+          ayuda_modal: false
+        });
+      })
+      .catch(error => {
+        console.log(error);
+      });
+  }
+
+  modal_ayuda = e => {
+    e.preventDefault();
+    this.setState({
+      ayuda_modal: true,
+      abrir_modal: false,
+      verPersona: false
+    });
+  };
+
   editar(id_persona) {
     this.props.history.push(`/persona/modificar/${id_persona}`);
   }
 
   cambiar_estado(id_persona) {
+    this.setState({
+      verPersona: false,
+      abrir_modal: false,
+      ayuda_modal: false
+    });
     axios({
       method: "delete",
       url: `${URL}/Persona/${id_persona}`,
@@ -232,7 +277,7 @@ class persona extends Component {
 
             this.notificationSystem.addNotification({
               title: <MdImportantDevices />,
-              message: "Se cambio el estado Con Exito",
+              message: "Se cambió el estado con éxito",
               level: "success"
             });
           }, 100);
@@ -264,12 +309,8 @@ class persona extends Component {
           <td>{e.id_persona}</td>
           <td>{e.nombres}</td>
           <td>{e.apellidos}</td>
-          <td>{e.email}</td>
-          <td>{e.telefono}</td>
           <td>{e.estado}</td>
-          <td>{e.genero}</td>
           <td>{e.rol}</td>
-          <td>{e.tipo_documento}</td>
           <td>{e.botones}</td>
         </tr>
       ));
@@ -292,14 +333,9 @@ class persona extends Component {
     if (this.state.parametro !== "") {
       data.forEach(v => {
         if (
-          v.id_persona.toLowerCase().includes(this.state.parametro) ||
           v.nombres.toLowerCase().includes(this.state.parametro) ||
           v.apellidos.toLowerCase().includes(this.state.parametro) ||
-          v.rol.toLowerCase().includes(this.state.parametro) ||
-          v.telefono.toLowerCase().includes(this.state.parametro) ||
-          v.genero.toLowerCase().includes(this.state.parametro) ||
-          v.tipo_documento.toLowerCase().includes(this.state.parametro) ||
-          v.email.toLowerCase().includes(this.state.parametro)
+          v.rol.toLowerCase().includes(this.state.parametro)
         ) {
           ds.push(v);
         }
@@ -312,18 +348,45 @@ class persona extends Component {
           initialValues={this.persona2}
           validationSchema={personaSchema}
           onSubmit={value => {
-            this.handleSubmit(value);
+            this.guardar(value);
           }}
         >
           {({ errors, touched, values }) => (
             <Form id="registro">
-              <Col md={10} lg={10}>
+              <Col md={12}>
+                <div className="row">
+                  <div className="col-lg-4" />
+
+                  <div className="col-lg-4">
+                    <center>
+                      <h3>Usuarios</h3>
+                    </center>
+                  </div>
+                  <div
+                    style={{
+                      textAlign: "right",
+                      padding: " 0px 105px 0px 0px"
+                    }}
+                    className="col-lg-4"
+                  >
+                    <button
+                      style={{ borderRadius: "5px", backgroundColor: "#fff" }}
+                      onClick={this.modal_ayuda}
+                    >
+                      <TiInfoLarge />
+                    </button>
+                  </div>
+                </div>
                 <Card className="flex-row">
                   <CardBody>
                     <div className="row">
                       <div className="col-4 form-group">
                         <label>Documento *</label>
-                        <Field name="id_persona" className="form-control" />
+                        <Field
+                          name="id_persona"
+                          type="number"
+                          className="form-control"
+                        />
                         {errors.id_persona && touched.id_persona ? (
                           <div className="text-danger">{errors.id_persona}</div>
                         ) : null}
@@ -351,21 +414,55 @@ class persona extends Component {
                       </div>
                       <div className="col-4 form-group">
                         <label>Clave *</label>
-                        <Field name="password" className="form-control" />
+                        <Field
+                          name="password"
+                          type="password"
+                          className="form-control"
+                        />
                         {errors.password && touched.password ? (
                           <div className="text-danger">{errors.password}</div>
                         ) : null}
                       </div>
+
                       <div className="col-4 form-group">
-                        <label>Telefono *</label>
+                        <label>Confirmar clave *</label>
+                        <Field
+                          name="passwordcon"
+                          type="password"
+                          className="form-control"
+                        />
+                        {values.password != values.passwordcon ? (
+                          <div className="text-danger">
+                            Las contraseñas no son iguales{" "}
+                          </div>
+                        ) : (
+                            ""
+                          )}
+                        {errors.passwordcon && touched.passwordcon ? (
+                          <div className="text-danger">
+                            {errors.passwordcon}
+                          </div>
+                        ) : null}
+                      </div>
+
+                      <div className="col-4 form-group">
+                        <label>Teléfono *</label>
                         <Field name="telefono" className="form-control" />
                         {errors.telefono && touched.telefono ? (
                           <div className="text-danger">{errors.telefono}</div>
                         ) : null}
                       </div>
                       <div className="col-4 form-group">
-                        <label>Genero *</label>
-                        <Field name="genero" className="form-control" />
+                        <label>Género *</label>
+                        <Field
+                          component="select"
+                          name="genero"
+                          className="form-control "
+                        >
+                          <option value=""> Género </option>
+                          <option>Femenino</option>
+                          <option>Masculino</option>
+                        </Field>
                         {errors.genero && touched.genero ? (
                           <div className="text-danger">{errors.genero}</div>
                         ) : null}
@@ -373,7 +470,7 @@ class persona extends Component {
                       <div className="col-4 form-group">
                         <label>Rol *</label>
                         <RolSelect />
-                        {errors.rol && values.rol === "" ? (
+                        {errors.rol && touched.rol ? (
                           <div className="text-danger">{errors.rol}</div>
                         ) : null}
                       </div>
@@ -382,16 +479,17 @@ class persona extends Component {
                         <label>Tipo Documento *</label>
                         <SelectTipoDoc />
                         {errors.id_tipo_documento &&
-                        values.id_tipo_documento === "" ? (
-                          <div className="text-danger">
-                            {errors.id_tipo_documento}
-                          </div>
-                        ) : null}
+                          touched.id_tipo_documento ? (
+                            <div className="text-danger">
+                              {errors.id_tipo_documento}
+                            </div>
+                          ) : null}
                       </div>
+
                       <div className="col-4 form-group" />
                       <div className="col-4 form-group">
-                        <label>Acudiente *</label>
-                        <AcudienteSelect />
+                        {values.rol == 1 ? <label>Acudiente *</label> : ""}
+                        {values.rol == 1 ? <AcudienteSelect /> : ""}
                       </div>
 
                       <div className="col-4 form-group" />
@@ -399,17 +497,18 @@ class persona extends Component {
                     <div className="row">
                       <div className="col-4 from-group" />
                       <div className="col-4 from-group">
-                        <br />
                         <center>
                           <button type="submit" className="btn btn-success">
                             Crear
                           </button>
                         </center>
                       </div>
-                      <div className="col-4 from-group" />
                     </div>
-                    <br />
-                    <br />
+                    <div className="row">
+                      <div align="right">
+                        <label>Los campos con (*) son obligatorios</label>
+                      </div>
+                    </div>
                   </CardBody>
                 </Card>
               </Col>
@@ -417,7 +516,7 @@ class persona extends Component {
           )}
         </Formik>
         <br />
-        <br />
+
         <Col md={12}>
           <Card className="flex-row">
             <CardBody>
@@ -444,31 +543,22 @@ class persona extends Component {
                 </div>
               </div>
               <br />
-              <br />
               <div className="row">
-                <div className="col-lg-6">
+                <div className="col-lg-12">
                   <Tabla
                     datos={data}
+                    botones
                     titulos={[
-                      "Tipo Doc",
-                      "Doc",
+                      "Documento",
                       "Nombres",
                       "Apellidos",
-                      "Correo",
-                      "Genero",
-                      "Telefono",
                       "Rol",
-                      "Estado",
-                      "Opciones"
+                      "Estado"
                     ]}
                     propiedades={[
-                      "tipo_documento",
                       "id_persona",
                       "nombres",
                       "apellidos",
-                      "email",
-                      "genero",
-                      "telefono",
                       "rol",
                       "estado",
                       "botones"
@@ -476,8 +566,6 @@ class persona extends Component {
                   />
                 </div>
               </div>
-              <br />
-              <br />
             </CardBody>
           </Card>
         </Col>
@@ -487,6 +575,13 @@ class persona extends Component {
           abrir_modal={this.state.abrir_modal}
           persona={this.state.persona}
         />
+
+        <VerPersona
+          verPersona={this.state.verPersona}
+          persona={this.state.persona}
+        />
+
+        <AyudaPersona ayuda_modal={this.state.ayuda_modal} />
 
         <NotificationSystem
           dismissible={false}

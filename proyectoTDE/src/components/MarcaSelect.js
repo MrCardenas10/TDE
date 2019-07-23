@@ -14,7 +14,7 @@ class MarcaSelect extends Component {
   componentDidMount() {
     axios({
       method: "get",
-      url: `${URL}/marca`,
+      url: `${URL}/selectmarca`,
       headers: {
         Authorization: "bearer" + localStorage.token
       }

@@ -12,6 +12,8 @@ import {
 import NotificationSystem from "react-notification-system";
 import { NOTIFICATION_SYSTEM_STYLE } from "utils/constants";
 import Tabla from "./../../components/Tabla";
+import { TiInfoLarge } from "react-icons/lib/ti";
+import AyudaEntradaEstudiante from "./AyudaEntradaEstudiante";
 
 const EntradaeSchema = Yup.object().shape({
   cod_tarjeta: Yup.number("La tarjeta tiene que ser un numero")
@@ -25,9 +27,13 @@ export default class EntradaEstudiante extends Component {
     super(props);
     this.state = {
       entradae: [],
-      parametro: ""
+      parametro: "",
+      ayuda_modal: false
     };
+    this.handleChange = this.handleChange.bind(this);
   }
+
+  tarjeta = {};
 
   llamar_listar() {
     axios({
@@ -85,6 +91,13 @@ export default class EntradaEstudiante extends Component {
     }
   }
 
+  modal_ayuda = e => {
+    e.preventDefault();
+    this.setState({
+      ayuda_modal: true
+    });
+  };
+
   // onChangeLetras(e) {
   //   const re = /[\u00F1A-z À-ú]*[\u00F1A-Z a-z À-ú][\u00F1A-Z a-z À-ú _]*$/g;
   //   if (!re.test(e.key)) {
@@ -134,14 +147,18 @@ export default class EntradaEstudiante extends Component {
     document.querySelector(".cr-sidebar").classList.remove("cr-sidebar--open");
   }
 
-  guardar(value) {
+  handleChange(event) {
+    let cod_tarjeta = event.target.value;
+    let array = {
+      cod_tarjeta
+    };
     axios({
       method: "post",
       url: `${URL}/entradaestudiante`,
       headers: {
         Authorization: "bearer " + localStorage.token
       },
-      data: value
+      data: array
     }).then(respuesta => {
       let datos = respuesta.data;
       if (datos.ok) {
@@ -155,30 +172,24 @@ export default class EntradaEstudiante extends Component {
 
           this.notificationSystem.addNotification({
             title: <MdImportantDevices />,
-            message: datos.error,
+            message: datos.mensaje,
             level: "success"
           });
         }, 100);
         this.llamar_listar();
       } else {
-        this.checkBreakpoint(this.props.breakpoint);
-
-        setTimeout(() => {
-          if (!this.notificationSystem) {
-            return;
-          }
-
-          this.notificationSystem.addNotification({
-            title: <MdImportantDevices />,
-            message: datos.error,
-            level: "error"
-          });
-        }, 50);
-
-        setTimeout(() => {
-          window.location = "/entradaestudiante/crear";
-        }, 2000);
-        document.getElementById("registro").reset();
+        // this.checkBreakpoint(this.props.breakpoint);
+        // setTimeout(() => {
+        //   if (!this.notificationSystem) {
+        //     return;
+        //   }
+        //   this.notificationSystem.addNotification({
+        //     title: <MdImportantDevices />,
+        //     message: datos.error,
+        //     level: "error"
+        //   });
+        // }, 50);
+        // document.getElementById("registro").reset();
       }
     });
   }
@@ -214,14 +225,31 @@ export default class EntradaEstudiante extends Component {
     }
     return (
       <div>
-        <br />
-        <center>
-          <h1>Registrar Entrada Estudiante</h1>
-        </center>
-        <br />
-        <br />
+        <div className="row">
+          <div className="col-lg-4" />
+
+          <div className="col-lg-4">
+            <center>
+              <h3>Entrada Estudiante</h3>
+            </center>
+          </div>
+          <div
+            style={{
+              textAlign: "right",
+              padding: " 0px 105px 0px 0px"
+            }}
+            className="col-lg-4"
+          >
+            <button
+              style={{ borderRadius: "5px", backgroundColor: "#fff" }}
+              onClick={this.modal_ayuda}
+            >
+              <TiInfoLarge />
+            </button>
+          </div>
+        </div>
         <Formik
-          initialValues={this.entradae2}
+          initialValues={this.tarjeta}
           validationSchema={EntradaeSchema}
           onSubmit={value => {
             this.guardar(value);
@@ -235,10 +263,11 @@ export default class EntradaEstudiante extends Component {
                     <div className="row">
                       <div className="col-4 form-group" />
                       <div className="col-4 form-group">
-                        <label>Tarjeta</label>
+                        <label>Tarjeta *</label>
                         <Field
                           id="cod_tarjeta"
                           name="cod_tarjeta"
+                          onChange={this.handleChange}
                           onKeyPress={e => this.onChangeNumero(e)}
                           className="form-control"
                         />
@@ -253,23 +282,29 @@ export default class EntradaEstudiante extends Component {
                     <div className="row">
                       <div className="col-4 form-group" />
                       <div className="col-4">
-                        <button
+                        {/* <button
                           type="submit"
                           className="btn btn-success float-right"
                         >
                           Entrar
-                        </button>
+                        </button> */}
                       </div>
                       <div className="col-4 form-group" />
                     </div>
-                    <br />
-                    <br />
+
+                    <div className="row">
+                      <div align="right" className="col-12 text-red">
+                        <label>Los campos con (*) son obligatorios</label>
+                      </div>
+                    </div>
                   </CardBody>
                 </Card>
               </Col>
             </Form>
           )}
         </Formik>
+        <br />
+
         <Col md={12}>
           <Card className="flex-row">
             <CardBody>
@@ -296,7 +331,7 @@ export default class EntradaEstudiante extends Component {
                 </div>
               </div>
               <br />
-              <br />
+
               <div className="row">
                 <div className="col-12">
                   <Tabla
@@ -320,6 +355,8 @@ export default class EntradaEstudiante extends Component {
           </Card>
         </Col>
         <br />
+        <AyudaEntradaEstudiante ayuda_modal={this.state.ayuda_modal} />
+
         <NotificationSystem
           dismissible={false}
           ref={notificationSystem =>

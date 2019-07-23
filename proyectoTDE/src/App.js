@@ -8,11 +8,14 @@ import Entrada from "pages/Entrada/Entrada";
 import Recuperar from "pages/producto/Recuperar";
 import Reset from "pages/producto/Reset";
 import EntradaEstudiante from "pages/EntradaEstudiante/EntradaEstudiante";
+import InicioVigilante from "pages/EntradaEstudiante/InicioVigilante";
 import ModificarVisitante from "pages/Visitante/ModificarVisitante";
 import RegistroVisitante from "pages/Visitante/RegistroVisitante";
 import Login from "pages/producto/Login";
 import CrearRecarga from "pages/Recarga/CrearRecarga";
+import Recargas from "pages/Recarga/Recargas";
 import CrearVenta from "pages/Venta/CrearVenta";
+import Ventas from "pages/Venta/Ventas";
 import CrearMarca from "pages/producto/CrearMarca";
 import CrearNovedad from "pages/producto/CrearNovedad";
 import CrearPresentacion from "pages/producto/CrearPresentacion";
@@ -26,17 +29,19 @@ import ModalPresentacion from "pages/producto/ModalPresentacion";
 import ModalTipoProducto from "pages/producto/ModalTipoProducto";
 import ModalUnidadMedida from "pages/producto/ModalUnidadMedida";
 import Producto from "pages/producto/Producto";
+import InicioVendedor from "pages/producto/InicioVendedor";
 import CrearProducto from "pages/producto/CrearProducto";
 import acudiente from "./pages/acudiente/acudiente";
+import ModalAcudiente from "./pages/acudiente/ModalAcudiente";
 import Acudientelis from "./pages/acudiente/Acudientelis";
 import modificarAcudiente from "./pages/acudiente/modificarAcudiente";
 //Estudiente
-import estudiante from "./pages/estudiante/estudiante";
-import estudiantelis from "./pages/estudiante/estudiantelis";
-import Modificar_estudiante from "./pages/estudiante/Modificar_estudiante";
+import ViEstudiante from "./pages/estudiante/ViEstudiante";
+import verRecargas from "./pages/estudiante/verRecargas";
+import verCompras from "./pages/estudiante/verCompras";
 //Persona
 import persona from "./pages/persona/persona";
-import personalis from "./pages/persona/personalis";
+import Secretaria from "./pages/persona/Secretaria";
 import Modificar_persona from "./pages/persona/Modificar_persona";
 //tajeta
 import creartarjeta from "./pages/tarjeta/creartarjeta";
@@ -62,11 +67,18 @@ class App extends React.Component {
               layout={MainLayout}
               component={acudiente}
             />
+            <LayoutRoute // Usuarios
+              exact
+              path="/secretaria"
+              layout={MainLayout}
+              component={Secretaria}
+            />
+
             <LayoutRoute
               exact
               path="/Acudiente/modificar/:id_acudiente"
               layout={MainLayout}
-              component={modificarAcudiente}
+              component={ModalAcudiente}
             />
 
             <LayoutRoute
@@ -74,6 +86,25 @@ class App extends React.Component {
               path="/persona"
               layout={MainLayout}
               component={persona}
+            />
+
+            <LayoutRoute // Estudiante
+              exact
+              path="/compras"
+              layout={MainLayout}
+              component={verCompras}
+            />
+            <LayoutRoute
+              exact
+              path="/verRecargas"
+              layout={MainLayout}
+              component={verRecargas}
+            />
+            <LayoutRoute
+              exact
+              path="/inicioEstudiante"
+              layout={MainLayout}
+              component={ViEstudiante}
             />
 
             <LayoutRoute //Producto
@@ -115,6 +146,14 @@ class App extends React.Component {
               layout={MainLayout}
               component={RegistroVisitante}
             />
+
+            <LayoutRoute
+              exact
+              path="/iniciovigilante"
+              layout={MainLayout}
+              component={InicioVigilante}
+            />
+
             <LayoutRoute
               exact
               path="/visitante/modificar/:id_visitante"
@@ -140,6 +179,12 @@ class App extends React.Component {
               path="/producto/crear"
               layout={MainLayout}
               component={CrearProducto}
+            />
+            <LayoutRoute
+              exact
+              path="/inicioVendedor"
+              layout={MainLayout}
+              component={InicioVendedor}
             />
             <LayoutRoute
               exact
@@ -223,6 +268,12 @@ class App extends React.Component {
               layout={MainLayout}
               component={CrearRecarga}
             />
+            <LayoutRoute //Recarga
+              exact
+              path="/Recargas"
+              layout={MainLayout}
+              component={Recargas}
+            />
 
             <LayoutRoute //Venta
               exact
@@ -230,16 +281,24 @@ class App extends React.Component {
               layout={MainLayout}
               component={CrearVenta}
             />
+            <LayoutRoute //Venta
+              exact
+              path="/Ventas"
+              layout={MainLayout}
+              component={Ventas}
+            />
 
             {localStorage.rol === "2" ? (
-              <Redirect to="/entradaestudiante/crear" />
+              <Redirect to="/iniciovigilante" />
             ) : localStorage.rol === "3" ? (
-              <Redirect to="/crearVenta" />
+              <Redirect to="/inicioVendedor" />
             ) : localStorage.rol === "4" ? (
-              <Redirect to="/persona" />
+              <Redirect to="/secretaria" />
+            ) : localStorage.rol === "1" ? (
+              <Redirect to="/inicioEstudiante" />
             ) : (
-              <Redirect to="/login" />
-            )}
+                      <Redirect to="/login" />
+                    )}
           </Switch>
         </GAListener>
       </BrowserRouter>

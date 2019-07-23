@@ -45,20 +45,20 @@ class ModalMarca extends Component {
       e.preventDefault();
       this.checkBreakpoint(this.props.breakpoint);
 
-    setTimeout(() => {
-      if (!this.notificationSystem) {
-        return;
-      }
+      setTimeout(() => {
+        if (!this.notificationSystem) {
+          return;
+        }
 
-      this.notificationSystem.addNotification({
-        title: <MdImportantDevices />,
-        message: "En este campo solo se letras",
-        level: "error"
-      });
-    }, 100);
+        this.notificationSystem.addNotification({
+          title: <MdImportantDevices />,
+          message: "En este campo solo se letras",
+          level: "error"
+        });
+      }, 100);
     }
-    
-  
+
+
   }
 
   onChangeNumero(e) {
@@ -71,7 +71,7 @@ class ModalMarca extends Component {
         if (!this.notificationSystem) {
           return;
         }
-  
+
         this.notificationSystem.addNotification({
           title: <MdImportantDevices />,
           message: "En este campo solo se admiten numeros",
@@ -79,8 +79,8 @@ class ModalMarca extends Component {
         });
       }, 100);
     }
-   
-    
+
+
   }
 
   modificar(value) {
@@ -95,21 +95,22 @@ class ModalMarca extends Component {
     }).then(respuesta => {
       let datos = respuesta.data;
       if (datos.ok) {
-        setTimeout(() => {
-          if (!this.notificationSystem) {
-            return;
-          }
-          this.notificationSystem.addNotification({
-            title: <MdImportantDevices />,
-            message: "Se actualizo exitosamente",
-            level: "success"
-          });
-        }, 100);
+
+        if (!this.notificationSystem) {
+          return;
+        }
+        this.notificationSystem.addNotification({
+          title: <MdImportantDevices />,
+          message: "Se actualizo exitosamente",
+          level: "success"
+        });
+
         this.toggle();
-        // setTimeout(() => {
-        //   this.llamar_listar();
-        // }, 200);
-        window.location = "/marca";
+        setTimeout(() => {
+          window.location = "/marca";
+        }, 300);
+
+
       } else {
         setTimeout(() => {
           if (!this.notificationSystem) {

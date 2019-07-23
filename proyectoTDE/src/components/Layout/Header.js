@@ -2,6 +2,8 @@ import React from "react";
 import ReactDOM from "react-dom";
 
 import Login from "./../../pages/producto/Login";
+import ActualizarPerfil from "./../../pages/persona/ActualizarPerfil";
+import ActualizarPassword from "./../../pages/persona/ActualizarPassword";
 import bn from "utils/bemnames";
 import * as Yup from "yup";
 import axios from "axios";
@@ -63,6 +65,14 @@ const MdNotificationsActiveWithBadge = withBadge({
 })(MdNotificationsActive);
 
 class Header extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      persona: [],
+      abrir_modal: false,
+      password_modal:false
+    };
+  }
   state = {
     isOpenNotificationPopover: false,
     isNotificationConfirmed: false,
@@ -70,6 +80,14 @@ class Header extends React.Component {
   };
 
   handleClick = event => {
+    this.setState({
+      abrir_modal: false,
+      isOpenNotificationPopover: false,
+      isNotificationConfirmed: false,
+      isOpenUserCardPopover: false,
+      password_modal:false
+
+    });
     axios({
       method: "get",
       url: `${URL}/logout?token=${localStorage.token}`
@@ -78,6 +96,7 @@ class Header extends React.Component {
       localStorage.removeItem("rol");
       localStorage.removeItem("email");
       localStorage.removeItem("nombres");
+      localStorage.removeItem("telefono");
       localStorage.removeItem("apellidos");
       localStorage.removeItem("genero");
       localStorage.removeItem("id_persona");
@@ -89,19 +108,76 @@ class Header extends React.Component {
     event.stopPropagation();
   };
 
+  modal_persona(id, event) {
+    event.preventDefault();
+    event.stopPropagation();
+    axios({
+      method: "get",
+      url: `${URL}/Persona/${id}`,
+      headers: {
+        Authorization: "bearer " + localStorage.token
+      }
+    })
+      .then(respuesta => {
+        let r = respuesta.data;
+        this.setState({
+          persona: r.data,
+          abrir_modal: true,
+          isOpenNotificationPopover: false,
+          isNotificationConfirmed: false,
+          isOpenUserCardPopover: false,
+      password_modal:false
+
+        });
+      })
+      .catch(error => {
+        console.log(error);
+      });
+  }
+
+
+  modal_password(event) {
+    event.preventDefault();
+    event.stopPropagation();
+        this.setState({
+          password_modal:true,
+          abrir_modal: false,
+          isOpenNotificationPopover: false,
+          isNotificationConfirmed: false,
+          isOpenUserCardPopover: false
+        });
+  }
+
   toggleNotificationPopover = () => {
     this.setState({
-      isOpenNotificationPopover: !this.state.isOpenNotificationPopover
+      isOpenNotificationPopover: !this.state.isOpenNotificationPopover,
+      isNotificationConfirmed: false,
+      isOpenUserCardPopover: false,
+      password_modal:false,
+        abrir_modal:false
     });
 
     if (!this.state.isNotificationConfirmed) {
-      this.setState({ isNotificationConfirmed: true });
+      this.setState({
+        isNotificationConfirmed: true,
+        isOpenNotificationPopover: false,
+        isOpenUserCardPopover: false,
+        password_modal:false,
+        abrir_modal:false
+
+      });
     }
   };
 
   toggleUserCardPopover = () => {
     this.setState({
-      isOpenUserCardPopover: !this.state.isOpenUserCardPopover
+      isOpenUserCardPopover: !this.state.isOpenUserCardPopover,
+      isNotificationConfirmed: false,
+      isOpenNotificationPopover: false,
+      password_modal:false,
+    });
+    this.setState({
+      abrir_modal: false
     });
   };
 
@@ -126,21 +202,7 @@ class Header extends React.Component {
 
         <Nav navbar className={bem.e("nav-right")}>
           <NavItem className="d-inline-flex">
-            <NavLink id="Popover1" className="position-relative">
-              {isNotificationConfirmed ? (
-                <MdNotificationsNone
-                  size={25}
-                  className="text-secondary can-click"
-                  onClick={this.toggleNotificationPopover}
-                />
-              ) : (
-                <MdNotificationsActiveWithBadge
-                  size={25}
-                  className="text-secondary can-click animated swing infinite"
-                  onClick={this.toggleNotificationPopover}
-                />
-              )}
-            </NavLink>
+            <NavLink id="Popover1" className="position-relative" />
             <Popover
               placement="bottom"
               isOpen={this.state.isOpenNotificationPopover}
@@ -184,28 +246,41 @@ class Header extends React.Component {
                   className="border-light"
                 >
                   <ListGroup flush>
-                    <ListGroupItem tag="button" action className="border-light">
-                      <MdPersonPin /> Profile
-                    </ListGroupItem>
-                    <ListGroupItem tag="button" action className="border-light">
-                      <MdInsertChart /> Stats
-                    </ListGroupItem>
-                    <ListGroupItem tag="button" action className="border-light">
-                      <MdMessage /> Messages
-                    </ListGroupItem>
-                    <ListGroupItem tag="button" action className="border-light">
-                      <MdSettingsApplications /> Settings
-                    </ListGroupItem>
-                    <ListGroupItem tag="button" action className="border-light">
-                      <MdHelp /> Help
-                    </ListGroupItem>
+                    <ListGroupItem
+                      tag="button"
+                      action
+                      className="border-light"
+                    />
+
                     <ListGroupItem
                       onClick={this.handleClick}
                       tag="button"
                       action
                       className="border-light"
                     >
-                      <MdExitToApp /> Cerrar Sesiòn
+                      <MdExitToApp /> Cerrar Sesión
+                    </ListGroupItem>
+                    <ListGroupItem
+                      onClick={event =>
+                        this.modal_persona(localStorage.id_persona, event)
+                      }
+                      tag="button"
+                      action
+                      className="border-light"
+                    >
+                      <MdExitToApp /> Actualizar Perfil
+                      
+                    </ListGroupItem>
+                    <ListGroupItem
+                      onClick={event =>
+                        this.modal_password(event)
+                      }
+                      tag="button"
+                      action
+                      className="border-light"
+                    >
+                      <MdExitToApp /> Actualizar Contraseña
+                      
                     </ListGroupItem>
                   </ListGroup>
                 </UserCard>
@@ -213,6 +288,14 @@ class Header extends React.Component {
             </Popover>
           </NavItem>
         </Nav>
+        <ActualizarPerfil
+          abrir_modal={this.state.abrir_modal}
+          persona={this.state.persona}
+        />
+        <ActualizarPassword
+          password_modal={this.state.password_modal}
+        />
+
       </Navbar>
     );
   }

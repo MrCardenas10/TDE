@@ -24,30 +24,30 @@ class MainLayout extends React.Component {
   componentDidMount() {
     this.checkBreakpoint(this.props.breakpoint);
 
-    setTimeout(() => {
-      if (!this.notificationSystem) {
-        return;
-      }
+    // setTimeout(() => {
+    //   if (!this.notificationSystem) {
+    //     return;
+    //   }
 
-      this.notificationSystem.addNotification({
-        title: <MdImportantDevices />,
-        message: 'Bienvenido',
-        level: 'info',
-      });
-    }, 1500);
+    //   this.notificationSystem.addNotification({
+    //     title: <MdImportantDevices />,
+    //     message: 'Bienvenido',
+    //     level: 'info',
+    //   });
+    // }, 1500);
 
-    setTimeout(() => {
-      if (!this.notificationSystem) {
-        return;
-      }
+    // setTimeout(() => {
+    //   if (!this.notificationSystem) {
+    //     return;
+    //   }
 
-      this.notificationSystem.addNotification({
-        title: <MdLoyalty />,
-        message:
-          'TDE',
-        level: 'info',
-      });
-    }, 2500);
+    //   this.notificationSystem.addNotification({
+    //     title: <MdLoyalty />,
+    //     message:
+    //       'TDE',
+    //     level: 'info',
+    //   });
+    // }, 2500);
   }
 
   // close sidebar when

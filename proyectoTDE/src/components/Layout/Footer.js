@@ -9,7 +9,7 @@ const Footer = () => {
     <Navbar>
       <Nav navbar>
         <NavItem>
-          2018 Reduction theme, source on <SourceLink>Github</SourceLink>
+          TDE (Tarjeta Débito Estudiantil) 2019
         </NavItem>
       </Nav>
     </Navbar>

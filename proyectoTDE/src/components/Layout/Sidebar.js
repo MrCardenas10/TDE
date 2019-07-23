@@ -5,6 +5,9 @@ import React from "react";
 import FaGithub from "react-icons/lib/fa/github";
 import Control from "funciones/index";
 import {
+  MdGroupAdd,
+  MdGrade,
+  MdLocalRestaurant,
   MdAccountCircle,
   MdArrowDropDownCircle,
   MdChromeReaderMode,
@@ -16,10 +19,32 @@ import {
   MdRadioButtonChecked,
   MdStar,
   MdViewCarousel,
-  MdViewList,
+  MdDoNotDisturbOff,
   MdWeb,
-  MdAttachMoney
+  MdShoppingCart,
+  MdAttachMoney,
+  MdAddShoppingCart,
+  MdMonetizationOn,
+  MdTitle,
+  MdWhatshot,
+  MdAddCircle,
+  MdAddCircleOutline,
+  MdPeople,
+  MdAccountBalance,
+  MdContacts,
+  MdPanTool
 } from "react-icons/lib/md";
+import { GoCreditCard } from "react-icons/lib/go";
+
+import { FaCartArrowDown, FaTags, FaSkyatlas } from "react-icons/lib/fa";
+import {
+  IoIosEye,
+  IoCoffee,
+  IoIosPeople,
+  IoHome,
+  IoAndroidPersonAdd,
+  IoAndroidWalk
+} from "react-icons/lib/io";
 import { NavLink } from "react-router-dom";
 import {
   // UncontrolledTooltip,
@@ -75,77 +100,121 @@ const sidebarBackground = {
 // ];
 
 const navProducto = [
-  { to: "/producto", name: "Producto", exact: false, Icon: MdDashboard },
-  { to: "/producto/crear", name: "Crear Producto", exact: false, Icon: MdWeb },
+  { to: "/inicioVendedor", name: "Inicio Vendedor", exact: false, Icon: MdGrade },
+  { to: "/producto", name: "Producto", exact: false, Icon: MdGrade },
+  {
+    to: "/producto/crear",
+    name: "Crear Producto",
+    exact: false,
+    Icon: MdLocalRestaurant
+  },
 
   {
     to: "/marca",
     name: "Marcas",
     exact: false,
-    Icon: MdDashboard
+    Icon: FaTags
   },
   {
     to: "/presentacion",
     name: "Presentaciones",
     exact: false,
-    Icon: MdDashboard
+    Icon: FaSkyatlas
   },
   {
     to: "/tipoproducto",
     name: "Tipo Producto",
     exact: false,
-    Icon: MdDashboard
+    Icon: MdTitle
   },
   {
     to: "/unidadmedida",
     name: "Unidad Medida",
     exact: false,
-    Icon: MdDashboard
+    Icon: MdWhatshot
   },
   {
     to: "/novedad/crear",
     name: "Crear novedad",
     exact: false,
-    Icon: MdDashboard
+    Icon: MdDoNotDisturbOff
   },
-  { to: "/entrada", name: "Entrada Producto", exact: false, Icon: MdDashboard }
+  {
+    to: "/entrada",
+    name: "Entrada Producto",
+    exact: false,
+    Icon: MdAddCircleOutline
+  }
 ];
 
 const navUsuarios = [
   {
+    to: "/secretaria",
+    name: "Inicio",
+    exact: false,
+    Icon: IoHome
+  },
+  {
     to: "/acudiente",
-    name: "Acudiente",
+    name: "Acudientes",
     exact: false,
     Icon: MdRadioButtonChecked
   },
   {
     to: "/creartarjeta",
-    name: "Registrar tarjeta ",
+    name: "Tarjetas",
     exact: false,
-    Icon: MdWeb
+    Icon: GoCreditCard
   },
 
-  { to: "/persona", name: "Registrar persona ", exact: false, Icon: MdStar }
+  { to: "/persona", name: "Usuarios ", exact: false, Icon: MdGroupAdd }
 ];
 
 const navEntrada = [
   {
+    to: "/iniciovigilante",
+    name: "Inicio",
+    exact: false,
+    Icon: MdAccountBalance
+  },
+  {
     to: "/entradaestudiante/crear",
     name: "Entrada Estudiante",
     exact: false,
-    Icon: MdRadioButtonChecked
+    Icon: IoAndroidWalk
   },
   {
     to: "/entradavisitante/crear",
     name: "Entrada Visitante",
     exact: false,
-    Icon: MdWeb
+    Icon: MdContacts
   },
   {
     to: "/visitante/crear",
-    name: "Nuevo Visitante",
+    name: "Visitante",
     exact: false,
-    Icon: MdRadioButtonChecked
+    Icon: IoAndroidPersonAdd
+  }
+];
+
+const navEstudiante = [
+  {
+    to: "/inicioEstudiante",
+    name: "Inicio",
+    exact: false,
+    Icon: MdAccountBalance
+  },
+  {
+    to: "/compras",
+    name: "Compras",
+    exact: false,
+    Icon: MdAccountBalance
+  },
+  {
+    to: "/verRecargas",
+    name: "Recargas",
+    exact: false,
+    Icon: IoAndroidWalk
   }
 ];
 
@@ -163,18 +232,33 @@ const navLogin = [
 //   { to: '/detalle/crear', name: 'creae detalle', exact: false, Icon: MdDashboard },
 // ];
 
-const navTarjeta = [
+const navVenta = [
+  {
+    to: "/crearVenta",
+    name: "Crear venta ",
+    exact: true,
+    Icon: MdAddShoppingCart
+  },
+  {
+    to: "/Ventas",
+    name: "Ver ventas ",
+    exact: true,
+    Icon: FaCartArrowDown
+  }
+];
+
+const navRecarga = [
   {
     to: "/crearRecarga",
-    name: "Recarga ",
+    name: "Crear recarga ",
     exact: true,
     Icon: MdAttachMoney
   },
   {
-    to: "/crearVenta",
-    name: "Venta ",
+    to: "/Recargas",
+    name: "Ver recargas ",
     exact: true,
-    Icon: MdAttachMoney
+    Icon: IoIosEye
   }
 ];
 
@@ -209,7 +293,9 @@ class Sidebar extends React.Component {
     isOpenLogin: false,
     isOpenEntrada: false,
     isOpenUsuarios: false,
-    isOpenTarjeta: false
+    isOpenRecarga: false,
+    isOpenVenta: false,
+    isOpenEstudiante: false
   };
 
   handleClick = name => () => {
@@ -337,7 +423,7 @@ class Sidebar extends React.Component {
               >
                 <BSNavLink className={bem.e("nav-item-collapse")}>
                   <div className="d-flex">
-                    <MdPages className={bem.e("nav-item-icon")} />
+                    <IoIosPeople className={bem.e("nav-item-icon")} />
                     <span className="">Usuarios</span>
                   </div>
                   <MdKeyboardArrowDown
@@ -375,11 +461,53 @@ class Sidebar extends React.Component {
             {Control(
               <NavItem
                 className={bem.e("nav-item")}
+                onClick={this.handleClick("Estudiante")}
+              >
+                <BSNavLink className={bem.e("nav-item-collapse")}>
+                  <div className="d-flex">
+                    <IoIosPeople className={bem.e("nav-item-icon")} />
+                    <span className="">Transacciones</span>
+                  </div>
+                  <MdKeyboardArrowDown
+                    className={bem.e("nav-item-icon")}
+                    style={{
+                      padding: 0,
+                      transform: this.state.isOpenEstudiante
+                        ? "rotate(0deg)"
+                        : "rotate(-90deg)",
+                      transitionDuration: "0.3s",
+                      transitionProperty: "transform"
+                    }}
+                  />
+                </BSNavLink>
+              </NavItem>,
+              "1"
+            )}
+            <Collapse isOpen={this.state.isOpenEstudiante}>
+              {navEstudiante.map(({ to, name, exact, Icon }, index) => (
+                <NavItem key={index} className={bem.e("nav-item")}>
+                  <BSNavLink
+                    id={`navItem-${name}-${index}`}
+                    className="text-case"
+                    tag={NavLink}
+                    to={to}
+                    activeClassName="active"
+                    exact={exact}
+                  >
+                    <Icon className={bem.e("nav-item-icon")} />
+                    <span className="">{name}</span>
+                  </BSNavLink>
+                </NavItem>
+              ))}
+            </Collapse>
+            {Control(
+              <NavItem
+                className={bem.e("nav-item")}
                 onClick={this.handleClick("Entrada")}
               >
                 <BSNavLink className={bem.e("nav-item-collapse")}>
                   <div className="d-flex">
-                    <MdPages className={bem.e("nav-item-icon")} />
+                    <MdPanTool className={bem.e("nav-item-icon")} />
                     <span className="">Entrada Usuarios</span>
                   </div>
                   <MdKeyboardArrowDown
@@ -502,11 +630,97 @@ class Sidebar extends React.Component {
             {Control(
               <NavItem
                 className={bem.e("nav-item")}
+                onClick={this.handleClick("Recarga")}
+              >
+                <BSNavLink className={bem.e("nav-item-collapse")}>
+                  <div className="d-flex">
+                    <MdMonetizationOn className={bem.e("nav-item-icon")} />
+                    <span className="">Recargas</span>
+                  </div>
+                  <MdKeyboardArrowDown
+                    className={bem.e("nav-item-icon")}
+                    style={{
+                      padding: 0,
+                      transform: this.state.isOpenRecarga
+                        ? "rotate(0deg)"
+                        : "rotate(-90deg)",
+                      transitionDuration: "0.3s",
+                      transitionProperty: "transform"
+                    }}
+                  />
+                </BSNavLink>
+              </NavItem>,
+              "3"
+            )}
+            <Collapse isOpen={this.state.isOpenRecarga}>
+              {navRecarga.map(({ to, name, exact, Icon }, index) => (
+                <NavItem key={index} className={bem.e("nav-item")}>
+                  <BSNavLink
+                    id={`navItem-${name}-${index}`}
+                    className="text"
+                    tag={NavLink}
+                    to={to}
+                    activeClassName="active"
+                    exact={exact}
+                  >
+                    <span> </span>
+                    <Icon className={bem.e("nav-item-icon")} />
+
+                    <span className="">{name}</span>
+                  </BSNavLink>
+                </NavItem>
+              ))}
+            </Collapse>
+            {Control(
+              <NavItem
+                className={bem.e("nav-item")}
+                onClick={this.handleClick("Venta")}
+              >
+                <BSNavLink className={bem.e("nav-item-collapse")}>
+                  <div className="d-flex">
+                    <MdShoppingCart className={bem.e("nav-item-icon")} />
+                    <span className="">Ventas</span>
+                  </div>
+                  <MdKeyboardArrowDown
+                    className={bem.e("nav-item-icon")}
+                    style={{
+                      padding: 0,
+                      transform: this.state.isOpenVenta
+                        ? "rotate(0deg)"
+                        : "rotate(-90deg)",
+                      transitionDuration: "0.3s",
+                      transitionProperty: "transform"
+                    }}
+                  />
+                </BSNavLink>
+              </NavItem>,
+              "3"
+            )}
+            <Collapse isOpen={this.state.isOpenVenta}>
+              {navVenta.map(({ to, name, exact, Icon }, index) => (
+                <NavItem key={index} className={bem.e("nav-item")}>
+                  <BSNavLink
+                    id={`navItem-${name}-${index}`}
+                    className="text-case"
+                    tag={NavLink}
+                    to={to}
+                    activeClassName="active"
+                    exact={exact}
+                  >
+                    <Icon className={bem.e("nav-item-icon")} />
+                    <span className="">{name}</span>
+                  </BSNavLink>
+                </NavItem>
+              ))}
+            </Collapse>
+            {Control(
+              <NavItem
+                className={bem.e("nav-item")}
                 onClick={this.handleClick("Productos")}
               >
                 <BSNavLink className={bem.e("nav-item-collapse")}>
                   <div className="d-flex">
-                    <MdPages className={bem.e("nav-item-icon")} />
+                    <IoCoffee className={bem.e("nav-item-icon")} />
                     <span className="">Productos</span>
                   </div>
                   <MdKeyboardArrowDown
@@ -541,48 +755,7 @@ class Sidebar extends React.Component {
                 </NavItem>
               ))}
             </Collapse>
-            {Control(
-              <NavItem
-                className={bem.e("nav-item")}
-                onClick={this.handleClick("Tarjeta")}
-              >
-                <BSNavLink className={bem.e("nav-item-collapse")}>
-                  <div className="d-flex">
-                    <MdPages className={bem.e("nav-item-icon")} />
-                    <span className="">Tarjeta</span>
-                  </div>
-                  <MdKeyboardArrowDown
-                    className={bem.e("nav-item-icon")}
-                    style={{
-                      padding: 0,
-                      transform: this.state.isOpenTarjeta
-                        ? "rotate(0deg)"
-                        : "rotate(-90deg)",
-                      transitionDuration: "0.3s",
-                      transitionProperty: "transform"
-                    }}
-                  />
-                </BSNavLink>
-              </NavItem>,
-              "3"
-            )}
-            <Collapse isOpen={this.state.isOpenTarjeta}>
-              {navTarjeta.map(({ to, name, exact, Icon }, index) => (
-                <NavItem key={index} className={bem.e("nav-item")}>
-                  <BSNavLink
-                    id={`navItem-${name}-${index}`}
-                    className="text-case"
-                    tag={NavLink}
-                    to={to}
-                    activeClassName="active"
-                    exact={exact}
-                  >
-                    <Icon className={bem.e("nav-item-icon")} />
-                    <span className="">{name}</span>
-                  </BSNavLink>
-                </NavItem>
-              ))}
-            </Collapse>
+
             {/* <NavItem
               className={bem.e('nav-item')}
               onClick={this.handleClick('Detalles')}>

@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { URL } from "./../../config/config";
+import TDEImage from "./../../assets/img/logo/TDE.png";
 import ReactDOM from "react-dom";
 
 import App from "./../../App";
@@ -14,8 +15,10 @@ import { MdImportantDevices } from "react-icons/lib/md";
 import bn from "./../../utils/bemnames";
 
 const LoginSchema = Yup.object().shape({
-  newpassword: Yup.string().required("Required"),
-  confirmPassword: Yup.string().required("Required")
+  newpassword: Yup.string().required("Por favor escriba su nueva contraseña"),
+  confirmPassword: Yup.string().required(
+    "Vuelva a ingresar su nueva contraseña"
+  )
 });
 
 const bem = bn.create("backgroup");
@@ -73,8 +76,12 @@ class Reset extends Component {
                 this.logiarse(value);
               }}
             >
-              {({ errors, values }) => (
+              {({ errors, values, touched }) => (
                 <Form>
+                  <center>
+                    <img src={TDEImage} width="200" height="230" alt="TDE" />
+                  </center>
+
                   <br />
 
                   <label>Nueva Contraseña:</label>
@@ -84,7 +91,7 @@ class Reset extends Component {
                     name="newpassword"
                     className="form-control"
                   />
-                  {errors.newpassword && values.newpassword ? (
+                  {errors.newpassword && touched.newpassword ? (
                     <div className="text-danger">{errors.newpassword}</div>
                   ) : null}
                   <br />
@@ -95,7 +102,7 @@ class Reset extends Component {
                     name="confirmPassword"
                     className="form-control"
                   />
-                  {errors.confirmPassword && values.confirmPassword ? (
+                  {errors.confirmPassword && touched.confirmPassword ? (
                     <div className="text-danger">{errors.confirmPassword}</div>
                   ) : null}
                   <br />

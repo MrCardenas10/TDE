@@ -50,7 +50,7 @@ class VisitanteController extends Controller{
                  Visitante::create($input);
                  return response()->json([
                     "ok" => true,
-                    "mensaje" => "Registro Con Exito" 
+                    "mensaje" => "Registró con éxito" 
                 ]);
             }catch (\Exception $th) {
                 return response()->json([
@@ -95,7 +95,7 @@ class VisitanteController extends Controller{
 
                  return response()->json([
                     "ok" => true,
-                    "mensaje" => "Se Modifico Con Exito",
+                    "mensaje" => "Se modificó con éxito",
                 ]);
             } catch (\Exception $th) {
                 return response()->json([
@@ -148,7 +148,7 @@ class VisitanteController extends Controller{
 
              return response()->json([
                 "ok" => true,
-                "mensaje" => "Se Modifico Con Exito!",
+                "mensaje" => "Se cambió el estado exitosamente",
             ]);
             
         }catch (\Exception $ex) {

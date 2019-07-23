@@ -3,20 +3,22 @@ import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import axios from "axios";
 import { URL } from "./../../config/config";
-import { Card, CardBody, Col } from "reactstrap";
-import { MdImportantDevices } from "react-icons/lib/md";
+import { Card, CardBody, Col, Input } from "reactstrap";
+import { MdImportantDevices, MdSearch } from "react-icons/lib/md";
 import { TiThumbsDown, TiThumbsUp } from "react-icons/lib/ti";
 import { TiEdit } from "react-icons/lib/ti";
 import NotificationSystem from "react-notification-system";
 import { NOTIFICATION_SYSTEM_STYLE } from "utils/constants";
 import Tabla from "./../../components/Tabla";
 import ModalPresentacion from "./ModalPresentacion";
+import { TiInfoLarge } from "react-icons/lib/ti";
+import AyudaPresentacion from "./AyudaPresentacion";
 
 const PresentacionSchema = Yup.object().shape({
   presentacion: Yup.string()
     .min(2, "Nombre demasiado corto")
     .max(50, "Nombre demasiado largo")
-    .required("Campo obliigatorio")
+    .required("Campo obligatorio")
 });
 
 class CrearPresentacion extends Component {
@@ -26,9 +28,14 @@ class CrearPresentacion extends Component {
       presentaciones: [],
       parametro: "",
       presentacion: [],
-      abrir_modal: false
+      abrir_modal: false,
+      ayuda_modal: false
     };
   }
+
+  prese = {
+    presentacion: ""
+  };
 
   componentWillReceiveProps({ breakpoint }) {
     if (breakpoint !== this.props.breakpoint) {
@@ -100,6 +107,10 @@ class CrearPresentacion extends Component {
   }
 
   guardar(value) {
+    this.setState({
+      ayuda_modal: false,
+      abrir_modal:false
+    });
     axios({
       method: "post",
       url: `${URL}/presentacion`,
@@ -192,6 +203,14 @@ class CrearPresentacion extends Component {
     });
   }
 
+  modal_ayuda = e => {
+    e.preventDefault();
+    this.setState({
+      ayuda_modal: true,
+      abrir_modal: false
+    });
+  };
+
   modal_presentacion(id) {
     axios({
       method: "get",
@@ -204,7 +223,8 @@ class CrearPresentacion extends Component {
         let r = respuesta.data;
         this.setState({
           presentacion: r.data,
-          abrir_modal: true
+          abrir_modal: true,
+          ayuda_modal: false
         });
       })
       .catch(error => {
@@ -213,6 +233,10 @@ class CrearPresentacion extends Component {
   }
 
   cambiar_estado(id) {
+    this.setState({
+      ayuda_modal: false,
+      abrir_modal:false
+    });
     axios({
       method: "delete",
       url: `${URL}/presentacion/${id}`,
@@ -223,6 +247,7 @@ class CrearPresentacion extends Component {
       let datos = respuesta.data;
 
       if (datos.ok) {
+        this.state.abrir_modal = false;
         setTimeout(() => {
           if (!this.notificationSystem) {
             return;
@@ -302,7 +327,10 @@ class CrearPresentacion extends Component {
     var ds = [];
     if (this.state.parametro !== "") {
       data.forEach(v => {
-        if (v.presentacion.toLowerCase().includes(this.state.parametro)) {
+        if (
+          v.presentacion.toLowerCase().includes(this.state.parametro) ||
+          v.estado.toLowerCase().includes(this.state.parametro)
+        ) {
           ds.push(v);
         }
       });
@@ -312,7 +340,7 @@ class CrearPresentacion extends Component {
     return (
       <div>
         <Formik
-          initialValues={this.presentacion}
+          initialValues={this.prese}
           validationSchema={PresentacionSchema}
           onSubmit={value => {
             this.guardar(value);
@@ -320,8 +348,28 @@ class CrearPresentacion extends Component {
         >
           {({ errors, touched }) => (
             <Form id="limpiar_campos">
-              <div align="center">
-                <h3>Presentaciones</h3>
+              <div className="row">
+                <div className="col-lg-4" />
+
+                <div className="col-lg-4">
+                  <center>
+                    <h3>Presentación</h3>
+                  </center>
+                </div>
+                <div
+                  style={{
+                    textAlign: "right",
+                    padding: " 0px 105px 0px 0px"
+                  }}
+                  className="col-lg-4"
+                >
+                  <button
+                    style={{ borderRadius: "5px", backgroundColor: "#fff" }}
+                    onClick={this.modal_ayuda}
+                  >
+                    <TiInfoLarge />
+                  </button>
+                </div>
               </div>
               <div className="content">
                 <Col md={12}>
@@ -366,10 +414,30 @@ class CrearPresentacion extends Component {
           )}
         </Formik>
         <br />
-        <br />
+
         <Col md={12}>
           <Card className="flex-row">
             <CardBody>
+              <div align="right">
+                <div className="col-4">
+                  <MdSearch
+                    height="35"
+                    width="55"
+                    size="2"
+                    className="cr-search-form__icon-search text-secondary"
+                  />
+                  <Input
+                    type="search"
+                    className="cr-search-form__input"
+                    placeholder="Buscar..."
+                    onKeyUp={({ target }) =>
+                      this.setState({
+                        parametro: target.value.toLowerCase()
+                      })
+                    }
+                  />
+                </div>
+              </div>
               <div className="row">
                 <div className="col-12">
                   <Tabla
@@ -393,6 +461,8 @@ class CrearPresentacion extends Component {
           abrir_modal={this.state.abrir_modal}
           presentacion={this.state.presentacion}
         />
+
+        <AyudaPresentacion ayuda_modal={this.state.ayuda_modal} />
 
         <NotificationSystem
           dismissible={false}

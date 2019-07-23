@@ -14,7 +14,7 @@ class TipoProductoSelect extends Component {
   componentDidMount() {
     axios({
       method: "get",
-      url: `${URL}/tipoproducto`,
+      url: `${URL}/selecttipoproducto`,
       headers: {
         Authorization: "bearer" + localStorage.token
       }

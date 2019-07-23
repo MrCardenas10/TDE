@@ -81,7 +81,7 @@ class TarjetaController extends Controller
 
                         return response()->json([
                             "ok" => true,
-                            "mensaje" => "Se registro con exito la tarjeta",
+                            "mensaje" => "Se registró con éxito la tarjeta",
                         ]);
 
                     } catch (\exception $ex) {
@@ -105,7 +105,7 @@ class TarjetaController extends Controller
         } else {
             return response()->json([
                 "ok" => false,
-                "error" => "El codigo de la tarjeta ingresado ya existe, Intente con otro.",
+                "error" => "El código de la tarjeta ingresado ya existe, Intente con otro.",
             ]);
         }
 
@@ -190,7 +190,7 @@ class TarjetaController extends Controller
 
             return response()->json([
                 "ok" => true,
-                "mensaje" => "Se modifico con exito",
+                "mensaje" => "Se cambió el estado con éxito",
             ]);
 
         } catch (\Exception $ex) {

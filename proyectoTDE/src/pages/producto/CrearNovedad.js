@@ -6,16 +6,18 @@ import SweetAlert from "sweetalert-react";
 import ProductoSelect from "./../../components/ProductoSelect";
 import { URL } from "./../../config/config";
 import { TiEdit } from "react-icons/lib/ti";
-import { Card, CardBody, Col } from "reactstrap";
+import { Card, CardBody, Col, Input } from "reactstrap";
 import {
   MdImportantDevices,
   // MdCardGiftcard,
-  MdLoyalty
+  MdSearch
 } from "react-icons/lib/md";
 import NotificationSystem from "react-notification-system";
 import { NOTIFICATION_SYSTEM_STYLE } from "utils/constants";
 import Tabla from "./../../components/Tabla";
 import ModalNovedad from "./ModalNovedades";
+import { TiInfoLarge } from "react-icons/lib/ti";
+import AyudaNovedad from "./AyudaNovedad";
 
 const NovedadSchema = Yup.object().shape({
   cantidad_producto: Yup.string().required(
@@ -35,9 +37,16 @@ class CrearNovedad extends Component {
       novedades: [],
       parametro: "",
       novedad: [],
-      abrir_modal: false
+      abrir_modal: false,
+      ayuda_modal: false
     };
   }
+
+  novedad = {
+    cantidad_producto: "",
+    motivo_salida: "",
+    id_producto: ""
+  };
 
   componentWillReceiveProps({ breakpoint }) {
     if (breakpoint !== this.props.breakpoint) {
@@ -109,6 +118,10 @@ class CrearNovedad extends Component {
   }
 
   guardar(value) {
+    this.setState({
+      ayuda_modal: false,
+      abrir_modal:false
+    });
     axios({
       method: "post",
       url: `${URL}/novedad`,
@@ -169,15 +182,7 @@ class CrearNovedad extends Component {
         let obj = {
           cantidad_producto,
           motivo_salida,
-          id_producto,
-          botones: [
-            <button
-              onClick={() => this.modal_novedad(id_novedad)}
-              className="btn btn-info"
-            >
-              <TiEdit />
-            </button>
-          ]
+          id_producto
         };
         novedades.push(obj);
       });
@@ -186,6 +191,14 @@ class CrearNovedad extends Component {
       });
     });
   }
+
+  modal_ayuda = e => {
+    e.preventDefault();
+    this.setState({
+      ayuda_modal: true,
+      abrir_modal:false
+    });
+  };
 
   modal_novedad(id) {
     axios({
@@ -199,7 +212,8 @@ class CrearNovedad extends Component {
         let r = respuesta.data;
         this.setState({
           novedad: r.data,
-          abrir_modal: true
+          abrir_modal: true,
+          ayuda_modal: false
         });
       })
       .catch(error => {
@@ -245,7 +259,7 @@ class CrearNovedad extends Component {
     var ds = [];
     if (this.state.parametro !== "") {
       data.forEach(v => {
-        if (v.novedad.toLowerCase().includes(this.state.parametro)) {
+        if (v.motivo_salida.toLowerCase().includes(this.state.parametro)) {
           ds.push(v);
         }
       });
@@ -254,10 +268,29 @@ class CrearNovedad extends Component {
 
     return (
       <div>
-        <hr />
-        <center>
-          <h3>Crear Novedad</h3>
-        </center>
+        <div className="row">
+          <div className="col-lg-4" />
+
+          <div className="col-lg-4">
+            <center>
+              <h3>Novedades</h3>
+            </center>
+          </div>
+          <div
+            style={{
+              textAlign: "right",
+              padding: " 0px 105px 0px 0px"
+            }}
+            className="col-lg-4"
+          >
+            <button
+              style={{ borderRadius: "5px", backgroundColor: "#fff" }}
+              onClick={this.modal_ayuda}
+            >
+              <TiInfoLarge />
+            </button>
+          </div>
+        </div>
 
         <Col md={12}>
           <Card className="demo-icons">
@@ -345,13 +378,34 @@ class CrearNovedad extends Component {
         <Col md={12}>
           <Card className="demo-icons">
             <CardBody>
+              <div className="row">
+                <div className="col-4" />
+                <div className="col-4" />
+                <div className="col-4">
+                  <MdSearch
+                    height="35"
+                    width="55"
+                    size="2"
+                    className="cr-search-form__icon-search text-secondary"
+                  />
+                  <Input
+                    type="search"
+                    className="cr-search-form__input"
+                    placeholder="Buscar..."
+                    onKeyUp={({ target }) =>
+                      this.setState({
+                        parametro: target.value.toLowerCase()
+                      })
+                    }
+                  />
+                </div>
+              </div>
               <br />
 
               <div className="row">
                 <div className="col-12">
                   <Tabla
                     datos={data}
-                    botones
                     titulos={[
                       "Cantidad de Producto",
                       "Motivo de Salida",
@@ -360,8 +414,7 @@ class CrearNovedad extends Component {
                     propiedades={[
                       "cantidad_producto",
                       "motivo_salida",
-                      "id_producto",
-                      "botones"
+                      "id_producto"
                     ]}
                   />
                 </div>
@@ -373,6 +426,8 @@ class CrearNovedad extends Component {
           abrir_modal={this.state.abrir_modal}
           novedad={this.state.novedad}
         />
+        <AyudaNovedad ayuda_modal={this.state.ayuda_modal} />
+
         <NotificationSystem
           dismissible={false}
           ref={notificationSystem =>

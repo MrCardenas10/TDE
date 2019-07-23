@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Model\Producto;
 use App\Model\ProductoHasVenta;
+use App\Model\Tarjeta;
 use App\Model\Venta;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use PDF;
 
 class VentaController extends Controller
 {
@@ -18,6 +21,44 @@ class VentaController extends Controller
     public function index()
     {
 
+        $ventas = Venta::select("tbl_venta.*", "tbl_tarjeta.cod_tarjeta")
+            ->join("tbl_tarjeta", "tbl_venta.cod_tarjeta", "=", "tbl_tarjeta.cod_tarjeta")
+            ->orderBy('id_venta', 'desc')
+            ->get();
+
+        return response()->json([
+            'ok' => true,
+            'data' => $ventas,
+        ]);
+
+    }
+
+    public function comprase($id_persona)
+    {
+        $ventas = Venta::select("tbl_venta.*", "tbl_tarjeta.cod_tarjeta")
+            ->join("tbl_tarjeta", "tbl_venta.cod_tarjeta", "=", "tbl_tarjeta.cod_tarjeta")
+            ->join("tbl_persona", "tbl_tarjeta.id_persona", "=", "tbl_persona.id_persona")
+            ->where("tbl_persona.id_persona", "=", $id_persona)
+            ->orderBy('id_venta', 'desc')
+            ->get();
+
+        return response()->json([
+            'ok' => true,
+            'data' => $ventas,
+        ]);
+
+    }
+
+    public function saludo()
+    {
+        $ventasu = Venta::take(5)
+            ->orderBy('id_venta', 'desc')
+            ->get();
+
+        return response()->json([
+            'ok' => true,
+            'data' => $ventasu,
+        ]);
     }
 
     /**
@@ -28,29 +69,46 @@ class VentaController extends Controller
 
      */
 
+    public function comprobante($id)
+    {
+
+        $venta = Venta::select("tbl_venta.*", 'tbl_venta.fecha as fecha_v')
+            ->join("tbl_tarjeta", "tbl_venta.cod_tarjeta", "=", "tbl_tarjeta.cod_tarjeta")
+            ->where("tbl_venta.id_venta", "=", $id)
+            ->get();
+
+        
+
+        $detalle = ProductoHasVenta::select("tbl_detalle_venta_producto.*", "tbl_producto.producto")
+            ->join("tbl_producto", "tbl_detalle_venta_producto.id_producto", "=", "tbl_producto.id_producto")
+            ->where("tbl_detalle_venta_producto.id_venta", "=", $id)
+            ->get();
+
+        $pdf = PDF::loadView('comprobante', compact('venta', 'detalle'));
+        return $pdf->stream('invoice');
+    }
+
     public function llenar(Request $request, $id_producto)
     {
 
         $input = $request->all(); //aqui estoy llamando todo lo que me trae de la vista
 
-        // if ($input["cantidad"] === null) {
-        //     $input["cantidad"] = 1;
-        // }
         $producto = Producto::find($id_producto); // aqui estoy diciendo que me busque por ese id
 
         if ($producto != null) {
             // if ($input["cantidad"] < $producto->cantidad) {
-                // $producto->cantidad = $input["cantidad"];
+            // $producto->cantidad = $input["cantidad"];
 
-                return response()->json([
-                    'ok' => true,
-                    'data' => $producto,
-                ]);
+            return response()->json([
+                'ok' => true,
+                'data' => $producto,
+            ]);
             // } else {
             //     return response()->json([
             //         'ok' => false,
             //         'error' => " El producto no cuenta con cantidades en stocks",
             //     ]);
+
             // }
         } else {
             return response()->json([
@@ -65,39 +123,59 @@ class VentaController extends Controller
     {
         $input = $request->all();
 
+        $productos = $request->data;
+        $encabezado = $request->hola;
         $valor = 0;
-        $producto = Producto::find($input["id_producto"]);
-        $producto->cantidad = $input["cantidad"];
 
-        foreach ($producto as $key => $value) {
-            $valor += $input["cantidad"] * $producto->precio;
+        foreach ($productos as $value) {
+            $valor += $value["precio"];
+
         }
-       
 
-       
-            $venta = Venta::create(["Monto_Venta" => $valor, "Cod_Tarjeta" => $input["Cod_Tarjeta"], "tipo_pago" => $input["tipo_pago"]]);
+        $saldo = DB::table('tbl_tarjeta')->select('saldo')
+            ->where('cod_tarjeta', '=', $encabezado)
+            ->get();
 
-        
+        if ($valor <= $saldo[0]->saldo) {
 
-            $valor = $producto->cantidad * $producto->precio;
+            try {
+                $venta = Venta::create(["Monto_Venta" => $valor, "cod_tarjeta" => $encabezado]);
 
+                foreach ($productos as $value) {
 
-            foreach ($producto as $key => $value) {
-                ProductoHasVenta::create(["cantidad" => $producto->cantidad,
-                "total" => $valor,
-                "id_venta" => $venta->Id_venta,
-                "id_producto" => $producto->id_producto]);
+                    ProductoHasVenta::create(["cantidad" => $value["cantidad"],
+                        "total" => $value["precio"],
+                        "id_venta" => $venta->id_venta,
+                        "id_producto" => $value["id_producto"]]);
 
-            return response()->json([
-                'ok' => true,
-                'mensaje' => "Registro con exito",
-            ]);
+                    $pro = Producto::find($value["id_producto"]);
+
+                    $pro->update(["cantidad" => $pro->cantidad - $value["cantidad"]]);
+
+                }
+
+                $tar = Tarjeta::find($encabezado);
+
+                $tar->update(["saldo" => $tar->saldo - $valor]);
+
+                return response()->json([
+                    'ok' => true,
+                    'mensaje' => "Se registró exitosamente",
+                ]);
+            } catch (\Exception $th) {
+                return response()->json([
+                    'ok' => false,
+                    'error' => $th->getMessage(),
+                ]);
             }
 
-            
+        } else {
+            return response()->json([
+                'ok' => false,
+                'error' => "No cuenta con dinero suficiente para hacer la compra.",
+            ]);
 
-        
-
+        }
     }
 
     /**
@@ -106,17 +184,29 @@ class VentaController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id_producto)
+    public function show($id_venta)
     {
-        $producto = Producto::select("tbl_producto.*")
-            ->where("tbl_producto.id_producto", "=", $id_producto)
-            ->first();
+        $ventas = ProductoHasVenta::select("tbl_detalle_venta_producto.*", "tbl_producto.producto")
+            ->join("tbl_producto", "tbl_detalle_venta_producto.id_producto", "=", "tbl_producto.id_producto")
+            ->where("tbl_detalle_venta_producto.id_venta", "=", $id_venta)
+            ->get();
 
         return response()->json([
             'ok' => true,
-            'data' => $producto,
+            'data' => $ventas,
         ]);
 
+    }
+
+    public function filtro($fecha_inicio, $fecha_fin)
+    {
+        $ventas = DB::table('tbl_venta')
+            ->whereBetween(Str::substr('fecha', 0, 10), [$fecha_inicio, $fecha_fin])->get();
+
+        return response()->json([
+            'ok' => true,
+            'data' => $ventas,
+        ]);
     }
 
     /**

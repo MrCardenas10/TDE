@@ -10,7 +10,9 @@ class PresentacionController extends Controller
 {
     public function select()
     {
-        $presentacion = Presentacion::all();
+        $presentacion = Presentacion::select("tbl_presentacion.*")
+        ->where("tbl_presentacion.estado", "1")
+        ->get();
 
         return response()->json([
             "ok"=>true,
@@ -24,14 +26,11 @@ class PresentacionController extends Controller
         $presentacion = Presentacion::select("tbl_presentacion.*")
         ->get();
 
-        $presentaciones = Presentacion::select("tbl_presentacion.*")
-        ->where("tbl_presentacion.estado", "1")
-        ->get();
+       
 
         return response()->json([
             "ok"=> true,
-            "data"=> $presentacion,
-            "select"=>$presentaciones
+            "data"=> $presentacion
         ]);
     }
 

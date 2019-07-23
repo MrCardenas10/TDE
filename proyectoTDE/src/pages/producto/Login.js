@@ -44,33 +44,34 @@ class Login extends Component {
         localStorage.nombres = datos.nombres.nombres;
         localStorage.email = datos.email;
         localStorage.genero = datos.genero.genero;
+        localStorage.telefono = datos.telefono.telefono;
         localStorage.apellidos = datos.apellidos.apellidos;
         localStorage.password = datos.password;
-        setTimeout(() => {
-          if (!this.notificationSystem) {
-            return;
-          }
 
-          this.notificationSystem.addNotification({
-            title: <MdImportantDevices />,
-            message: "Bienvenido a TDE",
-            level: "success"
-          });
-        }, 50);
+        if (!this.notificationSystem) {
+          return;
+        }
+
+        this.notificationSystem.addNotification({
+          title: <MdImportantDevices />,
+          message: "Bienvenido a TDE",
+          level: "success"
+        });
+
         window.location = "/app";
       } else {
+        console.log("hola");
         document.getElementById("registro").reset();
-        setTimeout(() => {
-          if (!this.notificationSystem) {
-            return;
-          }
 
-          this.notificationSystem.addNotification({
-            title: <MdImportantDevices />,
-            message: "Verifique las credenciales ingresadas",
-            level: "error"
-          });
-        }, 50);
+        if (!this.notificationSystem) {
+          return;
+        }
+
+        this.notificationSystem.addNotification({
+          title: <MdImportantDevices />,
+          message: datos.error,
+          level: "error"
+        });
       }
       console.log(respuesta);
     });
@@ -93,7 +94,7 @@ class Login extends Component {
                 this.logiarse(value);
               }}
             >
-              {({ errors, values }) => (
+              {({ errors, values, touched }) => (
                 <Form id="registro">
                   <center>
                     <img src={TDEImage} width="200" height="230" alt="TDE" />
@@ -107,7 +108,7 @@ class Login extends Component {
                     name="email"
                     className="form-control"
                   />
-                  {errors.email && values.email ? (
+                  {errors.email && touched.email ? (
                     <div className="text-danger">{errors.email}</div>
                   ) : null}
                   <br />
@@ -118,7 +119,7 @@ class Login extends Component {
                     name="password"
                     className="form-control"
                   />
-                  {errors.password && values.password ? (
+                  {errors.password && touched.password ? (
                     <div className="text-danger">{errors.password}</div>
                   ) : null}
                   <br />

@@ -63,7 +63,7 @@ class Modificar_persona extends Component {
   modificar(value) {
     axios({
       method: "put",
-      url: `${URL}/tbl_persona/${this.state.Persona.id}`,
+      url: `${URL}/tbl_persona/${value}`,
       headers: {
         Authorization: "bearer " + localStorage.token
       },

@@ -7,6 +7,7 @@ use App\Model\Tarjeta;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use PDF;
 use Validator;
 
 class RecargaController extends Controller
@@ -22,6 +23,54 @@ class RecargaController extends Controller
         return response()->json([
             'ok' => true,
             'data' => $recargas,
+        ]);
+    }
+
+    public function vistae($id_persona)
+    {
+        $recargas = Recarga::select("tbl_recarga.*", "tbl_tarjeta.cod_tarjeta")
+            ->join("tbl_tarjeta", "tbl_recarga.cod_tarjeta", "=", "tbl_tarjeta.cod_tarjeta")
+            ->join("tbl_persona", "tbl_tarjeta.id_persona", "=", "tbl_persona.id_persona")
+            ->where("tbl_persona.id_persona", "=", $id_persona)
+            ->orderBy('id_recarga', 'desc')
+            ->get();
+
+        return response()->json([
+            'ok' => true,
+            'data' => $recargas,
+        ]);
+    }
+
+    public function reporte($fecha_inicio, $fecha_fin)
+    {
+        if ($fecha_inicio == "1969-12-31" || $fecha_fin == "1969-12-31") {
+            $recar = Recarga::select("tbl_recarga.*", "tbl_tarjeta.cod_tarjeta")
+                ->join("tbl_tarjeta", "tbl_recarga.cod_tarjeta", "=", "tbl_tarjeta.cod_tarjeta")
+                ->orderBy('id_recarga', 'desc')
+                ->get();
+
+            $pdf = PDF::loadView('pdf', compact('recar'));
+            return $pdf->stream('invoice');
+        } else {
+
+            $recar = DB::table('tbl_recarga')
+                ->whereBetween(Str::substr('fecha', 0, 10), [$fecha_inicio, $fecha_fin])->get();
+
+            $pdf = PDF::loadView('pdf', compact('recar'));
+            return $pdf->stream('invoice');
+        }
+
+    }
+
+    public function saludo()
+    {
+        $recargasu = Recarga::take(5)
+            ->orderBy('id_recarga', 'desc')
+            ->get();
+
+        return response()->json([
+            'ok' => true,
+            'data' => $recargasu,
         ]);
     }
 
@@ -70,7 +119,7 @@ class RecargaController extends Controller
 
                         return response()->json([
                             'ok' => true,
-                            'mensaje' => "Se registró con exito",
+                            'mensaje' => "Se registró con éxito",
                         ]);
 
                     } catch (\Exception $ex) {
@@ -97,7 +146,7 @@ class RecargaController extends Controller
         } else {
             return response()->json([
                 'ok' => false,
-                'error' => "Tarjeta inhabilitada, activela",
+                'error' => "Tarjeta inactiva, actívela",
             ]);
         }
 

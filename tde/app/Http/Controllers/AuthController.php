@@ -98,15 +98,31 @@ class AuthController extends Controller
         }
 
         // $credentials['is_verified'] = 1;
+        $estado = User::select("tbl_persona.estado")
+        ->where("tbl_persona.email",$request->email)
+        ->first();
+        if($estado["estado"] == null){
+            return response()->json([
+                "ok"=> false,
+                "error" => "Usuario no encontrado"
+            ]);
+         }else{
+            if ($estado["estado"] == 0) {
+                return response()->json([
+                    "ok"=> false,
+                    "error" => "Usuario inactivo"
+                ]);
+            }
+         }
 
         try {
             // attempt to verify the credentials and create a token for the user
             if (! $token = JWTAuth::attempt($credentials)) {
-                return response()->json(['ok' => false, 'error' => 'We cant find an account with this credentials. Please make sure you entered the right information and you have verified your email address.'], 404);
+                return response()->json(['ok' => false, 'error' => 'No podemos encontrar su cuenta, por favor verifique la informacion ingresada']);
             }
         } catch (JWTException $e) {
             // something went wrong whilst attempting to encode the token
-            return response()->json(['ok' => false, 'error' => 'Failed to login, please try again.'], 500);
+            return response()->json(['ok' => false, 'error' => 'Fallo al inicar sesion, por favor intente de nuevo'], 500);
         }
 
         // $rol = Persona::select("tbl_persona.rol")
@@ -125,6 +141,9 @@ class AuthController extends Controller
         $apellidos = User::select("tbl_persona.apellidos")
         ->where("tbl_persona.email",$request->email)
         ->first();
+        $telefono = User::select("tbl_persona.telefono")
+        ->where("tbl_persona.email",$request->email)
+        ->first();
         $id_persona = User::select("tbl_persona.id_persona")
         ->where("tbl_persona.email",$request->email)
         ->first();
@@ -138,6 +157,7 @@ class AuthController extends Controller
          'genero' => $genero, 
          'id_persona' => $id_persona,
          'nombres' => $nombres,
+         'telefono' => $telefono,
          'apellidos' => $apellidos,
          'password' => $request->password,
          'email' => $request->email],200);
@@ -166,8 +186,8 @@ class AuthController extends Controller
         $user = Persona::where('email', $request->email)->first();
 
         if (!$user) {
-            $error_message = "Your email address was not found.";
-            return response()->json(['ok' => false, 'error' => ['email'=> $error_message]], 401);
+            $error_message = "El correo ingresado no existe.Verifique";
+            return response()->json(['ok' => false, 'error' => ['email'=> $error_message]]);
         }
         try {
             Password::sendResetLink($request->only('email'), function (Message $message) {
@@ -213,6 +233,10 @@ class AuthController extends Controller
         ->where("tbl_persona.email", $User)
         ->first();
 
+        $estado = Persona::select("tbl_persona.estado")
+        ->where("tbl_persona.email", $User)
+        ->first();
+
         try {
             $userpwd = Persona::find($usuario->id_persona);
 
@@ -220,6 +244,11 @@ class AuthController extends Controller
                 return response()->json([
                     'success'=> false,
                     'error'=> "Usuario no encontrado."
+                ]);
+            }else if ($estado["estado"] == 0) {
+                return response()->json([
+                    'seccess' => false,
+                    'error' => "El usuario esta inhabilitado por lo tanto no podra recuperar su contraseña"
                 ]);
             }
 

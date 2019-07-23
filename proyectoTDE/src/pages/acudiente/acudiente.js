@@ -1,16 +1,22 @@
 import React, { Component } from "react";
-
+import ModalAcudiente from "./ModalAcudiente";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import axios from "axios";
 import { URL } from "./../../config/config";
-import { Card, Col, CardBody } from "reactstrap";
+import { Card, Col, CardBody, Input } from "reactstrap";
 import { MdImportantDevices } from "react-icons/lib/md";
 import { TiThumbsDown, TiThumbsUp } from "react-icons/lib/ti";
 import NotificationSystem from "react-notification-system";
 import { NOTIFICATION_SYSTEM_STYLE } from "utils/constants";
 import Tabla from "./../../components/Tabla";
 import { TiEdit } from "react-icons/lib/ti";
+import {
+  // MdCardGiftcard,
+  MdSearch
+} from "react-icons/lib/md";
+import { TiInfoLarge } from "react-icons/lib/ti";
+import AyudaAcudiente from "./AyudaAcudiente";
 
 const acudienteSchema = Yup.object().shape({
   id_acudiente: Yup.string().required("Campo Obligatorio"),
@@ -25,7 +31,10 @@ class acudiente extends Component {
     super(props);
     this.state = {
       acudientes: [],
-      parametro: ""
+      acu: [],
+      parametro: "",
+      abrir_modal: false,
+      ayuda_modal: false
     };
   }
 
@@ -63,6 +72,10 @@ class acudiente extends Component {
       data: value
     }).then(respuesta => {
       let datos = respuesta.data;
+      this.setState({
+        ayuda_modal: false,
+        abrir_modal: false
+      });
       if (datos.ok) {
         this.checkBreakpoint(this.props.breakpoint);
 
@@ -140,7 +153,7 @@ class acudiente extends Component {
 
             estado === 1 ? (
               <button
-                onClick={() => this.editar(id_acudiente)}
+                onClick={() => this.modal_acudiente(id_acudiente)}
                 className="btn btn-info"
               >
                 <TiEdit />
@@ -159,12 +172,35 @@ class acudiente extends Component {
   componentDidMount() {
     this.llamar_listar();
   }
-
+  modal_acudiente(id_acudiente) {
+    axios({
+      method: "get",
+      url: `${URL}/Acudiente/${id_acudiente}`,
+      headers: {
+        Authorization: "bearer " + localStorage.token
+      }
+    })
+      .then(respuesta => {
+        let r = respuesta.data;
+        this.setState({
+          acu: r.data,
+          abrir_modal: true,
+          ayuda_modal: false
+        });
+      })
+      .catch(error => {
+        console.log(error);
+      });
+  }
   editar(id_acudiente) {
     this.props.history.push(`/Acudiente/modificar/${id_acudiente}`);
   }
 
   cambiar_estado(id_acudiente) {
+    this.setState({
+      abrir_modal: false,
+      ayuda_modal: false
+    });
     axios({
       method: "delete",
       url: `${URL}/Acudiente/${id_acudiente}`,
@@ -196,6 +232,14 @@ class acudiente extends Component {
       });
   }
 
+  modal_ayuda = e => {
+    e.preventDefault();
+    this.setState({
+      ayuda_modal: true,
+      abrir_modal: false
+    });
+  };
+
   boton_estado(clase, title, id_acudiente) {
     return (
       <button
@@ -210,8 +254,8 @@ class acudiente extends Component {
   }
 
   listar() {
-    if (this.state.tbl_acudiente.length > 0) {
-      return this.state.tbl_acudiente.map((e, i) => (
+    if (this.state.acudientes.length > 0) {
+      return this.state.acudientes.map((e, i) => (
         <tr key={i}>
           <td>{e.id_acudiente}</td>
           <td>{e.nombres}</td>
@@ -241,10 +285,9 @@ class acudiente extends Component {
     if (this.state.parametro !== "") {
       data.forEach(v => {
         if (
+          v.id_acudiente.toLowerCase().includes(this.state.parametro) ||
           v.nombres.toLowerCase().includes(this.state.parametro) ||
           v.apellidos.toLowerCase().includes(this.state.parametro) ||
-          v.id_acudiente.toLowerCase().includes(this.state.parametro) ||
-          v.correo.toLowerCase().includes(this.state.parametro) ||
           v.telefono.toLowerCase().includes(this.state.parametro)
         ) {
           ds.push(v);
@@ -263,8 +306,28 @@ class acudiente extends Component {
         >
           {({ errors, touched, values }) => (
             <Form id="registro">
-              <div align="center">
-                <h3>Acudientes</h3>
+              <div className="row">
+                <div className="col-lg-4" />
+
+                <div className="col-lg-4">
+                  <center>
+                    <h3>Acudiente</h3>
+                  </center>
+                </div>
+                <div
+                  style={{
+                    textAlign: "right",
+                    padding: " 0px 105px 0px 0px"
+                  }}
+                  className="col-lg-4"
+                >
+                  <button
+                    style={{ borderRadius: "5px", backgroundColor: "#fff" }}
+                    onClick={this.modal_ayuda}
+                  >
+                    <TiInfoLarge />
+                  </button>
+                </div>
               </div>
               <div className="content">
                 <Col md={12}>
@@ -353,8 +416,9 @@ class acudiente extends Component {
         <Col md={12}>
           <Card className="flex-row">
             <CardBody>
+              <br />
               <div className="row">
-                <div className="col-12">
+                <div className="col-lg-12">
                   <Tabla
                     datos={data}
                     botones
@@ -381,6 +445,13 @@ class acudiente extends Component {
             </CardBody>
           </Card>
         </Col>
+
+        <ModalAcudiente
+          abrir_modal={this.state.abrir_modal}
+          acudientes={this.state.acudientes}
+        />
+
+        <AyudaAcudiente ayuda_modal={this.state.ayuda_modal} />
 
         <NotificationSystem
           dismissible={false}

@@ -5,14 +5,21 @@ import * as Yup from "yup";
 import { URL } from "./../../config/config";
 import { BootstrapTable, TableHeaderColumn } from "react-bootstrap-table";
 import { Card, Col, CardBody } from "reactstrap";
+
 import moment from "moment";
 import {
   MdImportantDevices,
   // MdCardGiftcard,
-  MdLoyalty
+  MdLoyalty,
+  MdSentimentVerySatisfied,
+  MdSentimentVeryDissatisfied,
+  MdHelp
 } from "react-icons/lib/md";
+import { TiInfoLarge } from "react-icons/lib/ti";
+import AyudaRecarga from "./AyudaRecarga";
 import NotificationSystem from "react-notification-system";
 import { NOTIFICATION_SYSTEM_STYLE } from "utils/constants";
+import { Button } from "@material-ui/core";
 
 const RecargaSchema = Yup.object().shape({
   monto: Yup.string().required("Campo Obligatorio"),
@@ -24,10 +31,12 @@ class CrearRecarga extends Component {
     super(props);
 
     this.state = {
-      recargas: []
+      recargas: [],
+      ayuda_modal: false
+
     };
 
-    this.handleChange = this.handleChange.bind(this); // en el contructor se crea esto que es para poder utilizar el onChange
+
   }
 
   recarga = {
@@ -68,7 +77,7 @@ class CrearRecarga extends Component {
 
         this.notificationSystem.addNotification({
           title: <MdImportantDevices />,
-          message: "En este campo solo se admiten numeros",
+          message: "En este campo solo se admiten números",
           level: "error"
         });
       }, 100);
@@ -99,37 +108,17 @@ class CrearRecarga extends Component {
     return out;
   }
 
-  handleChange() {
-    let ini = document.getElementById("fecha_inicio").value || 0;
-    let fi = document.getElementById("fecha_fin").value || 0;
-    let inicio = moment(ini).format("YYYY-MM-DD");
-    let fin = moment(fi).format("YYYY-MM-DD");
-    if (fin === "1969-12-31") {
-      this.llamar_listar();
-    }
-    console.log(fin);
-    axios({
-      method: "get",
-      url: `${URL}/recarga/show/${inicio}/${fin}`,
-      headers: {
-        Authorization: "bearer " + localStorage.token
-      }
-    })
-      .then(respuesta => {
-        let r = respuesta.data;
-        this.setState({
-          recargas: r.data
-        });
-      })
-      .catch(error => {
-        alert("Error");
-      });
-  }
+  modal_ayuda = e => {
+    e.preventDefault();
+    this.setState({
+      ayuda_modal: true
+    });
+  };
 
   llamar_listar() {
     axios({
       method: "get",
-      url: `${URL}/recarga`,
+      url: `${URL}/saludo`,
       headers: {
         Authorization: "bearer " + localStorage.token
       }
@@ -162,6 +151,7 @@ class CrearRecarga extends Component {
     }
   }
 
+
   cargando() {
     return (
       <tr>
@@ -173,6 +163,9 @@ class CrearRecarga extends Component {
   }
 
   guardar(value) {
+    this.setState({
+      ayuda_modal: false
+    });
     axios({
       method: "post",
       url: `${URL}/recarga`,
@@ -194,7 +187,7 @@ class CrearRecarga extends Component {
           }
 
           this.notificationSystem.addNotification({
-            title: <MdImportantDevices />,
+            title: <MdSentimentVerySatisfied />,
             message: datos.mensaje,
             level: "success"
           });
@@ -212,7 +205,7 @@ class CrearRecarga extends Component {
           }
 
           this.notificationSystem.addNotification({
-            title: <MdImportantDevices />,
+            title: <MdSentimentVeryDissatisfied />,
             message: datos.error,
             level: "error"
           });
@@ -245,8 +238,28 @@ class CrearRecarga extends Component {
         >
           {({ errors, touched, values }) => (
             <Form id="registro">
-              <div align="center">
-                <h3 className="align-center">Recargas</h3>
+              <div className="row">
+                <div className="col-lg-4" />
+
+                <div className="col-lg-4">
+                  <center>
+                    <h3>Recargas</h3>
+                  </center>
+                </div>
+                <div
+                  style={{
+                    textAlign: "right",
+                    padding: " 0px 105px 0px 0px"
+                  }}
+                  className="col-lg-4"
+                >
+                  <button
+                    style={{ borderRadius: "5px", backgroundColor: "#fff" }}
+                    onClick={this.modal_ayuda}
+                  >
+                    <TiInfoLarge />
+                  </button>
+                </div>
               </div>
 
               <div className="content">
@@ -291,40 +304,31 @@ class CrearRecarga extends Component {
                             Aceptar
                           </button>
                         </div>
+
                       </div>
                       <hr />
                       <div className="row">
-                        <div align="right" className="col-12 text-danger">
+                        <div align="right" className="col-12 ">
                           <label>Los campos con (*) son obligatorios</label>
                         </div>
                       </div>
-                      <div className="row">
-                        <div className="col-6" />
-                        <div className="col-3">
-                          <Field
-                            type="date"
-                            id="fecha_inicio"
-                            name="fecha_inicio"
-                            className="form-control"
-                          />
-                        </div>
-                        <div className="col-3">
-                          <Field
-                            name="fecha_fin"
-                            id="fecha_fin"
-                            type="date"
-                            className="form-control"
-                            onChange={this.handleChange}
-                          />
-                        </div>
-                      </div>
-                      <br />
 
+                    </CardBody>
+                  </Card>
+                </Col>
+                <br />
+
+                <Col md={12}>
+                  <Card className="flex-row">
+                    <CardBody>
+                      <span align="center">
+                        <h4 className="text">Recargas recientes</h4>
+                      </span>
                       <div className="row">
                         <div className="col-12">
                           <BootstrapTable
                             data={data}
-                            pagination={true}
+                            pagination={false}
                             options={options}
                             bordered={false}
                             striped
@@ -361,6 +365,7 @@ class CrearRecarga extends Component {
                           </BootstrapTable>
                         </div>
                       </div>
+
                     </CardBody>
                   </Card>
                 </Col>
@@ -368,6 +373,8 @@ class CrearRecarga extends Component {
             </Form>
           )}
         </Formik>
+
+        <AyudaRecarga ayuda_modal={this.state.ayuda_modal} />
 
         <NotificationSystem
           dismissible={false}

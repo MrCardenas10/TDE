@@ -10,7 +10,9 @@ class TipoProductoController extends Controller
 {
     public function select()
     {
-        $tipo = TipoProducto::all();
+        $tipo = TipoProducto::select("tbl_tipo_producto.*")
+        ->where("tbl_tipo_producto.estado","1")
+        ->get();
 
         return response()->json([
             "ok"=>true,
@@ -24,14 +26,12 @@ class TipoProductoController extends Controller
         $tipos = TipoProducto::select("tbl_tipo_producto.*")
         ->get();
 
-        $tipo = TipoProducto::select("tbl_tipo_producto.*")
-        ->where("tbl_tipo_producto.estado","1")
-        ->get();
+      
 
         return response()->json([
             "ok"=> true,
             "data"=> $tipos,
-            "select"=>$tipo
+         
         ]);
     }
 

@@ -14,6 +14,8 @@ import Tabla from "./../../components/Tabla";
 import NotificationSystem from "react-notification-system";
 import { TiEdit, TiThumbsDown, TiThumbsUp } from "react-icons/lib/ti";
 import { NOTIFICATION_SYSTEM_STYLE } from "utils/constants";
+import { TiInfoLarge } from "react-icons/lib/ti";
+import AyudaVisitante from "./AyudaVisitante";
 
 const RegistroVisitanteSchema = Yup.object().shape({
   nombre_visitante: Yup.string()
@@ -34,7 +36,8 @@ export default class Entrada extends Component {
       visitante: [],
       parametro: "",
       visitantes: [],
-      abrir_modal: false
+      abrir_modal: false,
+      ayuda_modal: false
     };
   }
 
@@ -77,7 +80,7 @@ export default class Entrada extends Component {
 
         this.notificationSystem.addNotification({
           title: <MdImportantDevices />,
-          message: "En este campo solo se admiten numeros",
+          message: "En este campo solo se admiten números",
           level: "error"
         });
       }, 100);
@@ -132,15 +135,15 @@ export default class Entrada extends Component {
           botones: [
             estado === 1
               ? this.boton_estado(
-                  "btn btn-danger bordered",
-                  <TiThumbsDown />,
-                  id_visitante
-                )
+                "btn btn-danger bordered",
+                <TiThumbsDown />,
+                id_visitante
+              )
               : this.boton_estado(
-                  "btn btn-success",
-                  <TiThumbsUp />,
-                  id_visitante
-                ),
+                "btn btn-success",
+                <TiThumbsUp />,
+                id_visitante
+              ),
             <span> </span>,
             estado === 1 ? (
               <button
@@ -160,6 +163,14 @@ export default class Entrada extends Component {
     });
   }
 
+  modal_ayuda = e => {
+    e.preventDefault();
+    this.setState({
+      ayuda_modal: true,
+      abrir_modal: false
+    });
+  };
+
   modal_visitante(id) {
     axios({
       method: "get",
@@ -172,7 +183,8 @@ export default class Entrada extends Component {
         let r = respuesta.data;
         this.setState({
           visitantes: r.data,
-          abrir_modal: true
+          abrir_modal: true,
+          ayuda_modal: false
         });
       })
       .catch(error => {
@@ -189,6 +201,10 @@ export default class Entrada extends Component {
   }
 
   cambiar_estado(id_visitante) {
+    this.setState({
+      ayuda_modal: false,
+      abrir_modal: false
+    });
     axios({
       method: "delete",
       url: `${URL}/visitante/${id_visitante}`,
@@ -198,22 +214,34 @@ export default class Entrada extends Component {
     })
       .then(respuesta => {
         let r = respuesta.data;
+        this.state.abrir_modal = false;
         if (r.ok) {
-          this.setState({
-            abrir_modal: false,
-            sweetShow: true,
-            sweetTitle: "Genial",
-            sweetText: r.mensaje,
-            sweetType: "seccess"
-          });
+          setTimeout(() => {
+            if (!this.notificationSystem) {
+              return;
+            }
+            document.getElementById("registro").reset();
+
+            this.notificationSystem.addNotification({
+              title: <MdImportantDevices />,
+              message: r.mensaje,
+              level: "success"
+            });
+          }, 100);
           this.llamar_listar();
         } else {
-          this.setState({
-            sweetShow: true,
-            sweetTitle: "Ops",
-            sweetText: r.error,
-            sweetType: "error"
-          });
+          setTimeout(() => {
+            if (!this.notificationSystem) {
+              return;
+            }
+            document.getElementById("registro").reset();
+
+            this.notificationSystem.addNotification({
+              title: <MdImportantDevices />,
+              message: r.error,
+              level: "error"
+            });
+          }, 100);
         }
       })
       .catch(error => {
@@ -269,7 +297,7 @@ export default class Entrada extends Component {
 
           this.notificationSystem.addNotification({
             title: <MdImportantDevices />,
-            message: "Se registro Con Exito",
+            message: "Se registró con éxito",
             level: "success"
           });
         }, 100);
@@ -312,12 +340,30 @@ export default class Entrada extends Component {
     }
     return (
       <div>
-        <br />
-        <center>
-          <h1>Registrar Visitante</h1>
-        </center>
-        <br />
-        <br />
+        <div className="row">
+          <div className="col-lg-4" />
+
+          <div className="col-lg-4">
+            <center>
+              <h3>Visitantes</h3>
+            </center>
+          </div>
+          <div
+            style={{
+              textAlign: "right",
+              padding: " 0px 105px 0px 0px"
+            }}
+            className="col-lg-4"
+          >
+            <button
+              style={{ borderRadius: "5px", backgroundColor: "#fff" }}
+              onClick={this.modal_ayuda}
+            >
+              <TiInfoLarge />
+            </button>
+          </div>
+        </div>
+
         <Formik
           initialValues={this.visitantes}
           validationSchema={RegistroVisitanteSchema}
@@ -334,35 +380,35 @@ export default class Entrada extends Component {
                       <CardBody>
                         <div className="row">
                           <div className="col-4 form-group">
-                            <label>Nombre</label>
+                            <label>Nombre *</label>
                             <Field
                               name="nombre_visitante"
                               className="form-control"
                               onKeyPress={e => this.onChangeLetras(e)}
                             />
                             {errors.nombre_visitante &&
-                            touched.nombre_visitante ? (
-                              <div className="text-danger">
-                                {errors.nombre_visitante}
-                              </div>
-                            ) : null}
+                              touched.nombre_visitante ? (
+                                <div className="text-danger">
+                                  {errors.nombre_visitante}
+                                </div>
+                              ) : null}
                           </div>
                           <div className="col-4 form-group">
-                            <label>Apellido</label>
+                            <label>Apellido *</label>
                             <Field
                               name="apellido_visitante"
                               className="form-control"
                               onKeyPress={e => this.onChangeLetras(e)}
                             />
                             {errors.apellido_visitante &&
-                            touched.apellido_visitante ? (
-                              <div className="text-danger">
-                                {errors.apellido_visitante}
-                              </div>
-                            ) : null}
+                              touched.apellido_visitante ? (
+                                <div className="text-danger">
+                                  {errors.apellido_visitante}
+                                </div>
+                              ) : null}
                           </div>
                           <div className="col-4 form-group">
-                            <label>Documento</label>
+                            <label>Documento *</label>
                             <Field
                               name="id_visitante"
                               onKeyPress={e => this.onChangeNumero(e)}
@@ -379,7 +425,7 @@ export default class Entrada extends Component {
                           <div className="col-4 form-group" />
                           <div className="col-4 form-group">
                             <br />
-                            <br />
+
                             <center>
                               <button type="submit" className="btn btn-success">
                                 Registrar
@@ -387,6 +433,11 @@ export default class Entrada extends Component {
                             </center>
                           </div>
                           <div className="col-4 form-group" />
+                        </div>
+                        <div className="row">
+                          <div align="right" className="col-12 text-red">
+                            <label>Los campos con (*) son obligatorios</label>
+                          </div>
                         </div>
                       </CardBody>
                     </Card>
@@ -396,7 +447,7 @@ export default class Entrada extends Component {
             </div>
           )}
         </Formik>
-        <br />
+
         <br />
         <Col md={12}>
           <Card className="flex-row">
@@ -453,6 +504,8 @@ export default class Entrada extends Component {
           abrir_modal={this.state.abrir_modal}
           visitantes={this.state.visitantes}
         />
+        <AyudaVisitante ayuda_modal={this.state.ayuda_modal} />
+
         <NotificationSystem
           dismissible={false}
           ref={notificationSystem =>

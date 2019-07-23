@@ -104,7 +104,7 @@ class ModalProducto extends Component {
           }
           this.notificationSystem.addNotification({
             title: <MdImportantDevices />,
-            message: "Se actualizo exitosamente",
+            message: "Se actualizó exitosamente",
             level: "success"
           });
         }, 100);

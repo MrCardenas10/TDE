@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Validator;
 
+
 class personaController extends Controller
 {
     /**
@@ -134,7 +135,7 @@ class personaController extends Controller
 
             return response()->json([
                 "ok" => true,
-                "mensaje" => "El usuario se registro con exito",
+                "mensaje" => "El usuario se registró con éxito",
             ]);
 
         } catch (\exception $ex) {
@@ -154,7 +155,7 @@ class personaController extends Controller
      */
     public function show($id_persona)
     {
-        $tbl_persona = Persona::select("tbl_persona.*", "tbl_tipo_documento.id_tipo_documento")
+        $tbl_persona = Persona::select("tbl_persona.*", "tbl_tipo_documento.id_tipo_documento","tbl_tipo_documento.tipo_documento")
             ->join("tbl_tipo_documento", "tbl_persona.id_tipo_documento", "tbl_tipo_documento.id_tipo_documento")
             ->where("tbl_persona.id_persona", $id_persona)
             ->first();
@@ -179,7 +180,7 @@ class personaController extends Controller
         $validator = Validator::make($input, [
             'nombres' => 'required',
             'apellidos' => 'required',
-            'email' => 'required|unique:tbl_persona|max:255',
+            'genero' => 'required',
             'telefono' => 'required|numeric',
             'id_tipo_documento' => 'required|numeric',
         ]);
@@ -212,6 +213,107 @@ class personaController extends Controller
             return response()->json([
                 "ok" => false,
                 "error" => $ex->getMessage(),
+            ]);
+        }
+    }
+
+    public function actualizarPassword(Request $request, $id_persona)
+    {
+        $input = $request->all();
+        $validator = Validator::make($input, [
+            'newpassword' => 'required|max:45',
+            'confirmPassword' => 'required|same:newpassword',
+            ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'ok' => false,
+                'error' => $validator->messages(),
+            ]);
+        }
+        $newpassword = $request->newpassword;
+        $usuario = Persona::select("tbl_persona.id_persona")
+        ->where("tbl_persona.id_persona", $id_persona)
+        ->first();
+
+        try {
+            $userpwd = Persona::find($usuario->id_persona);
+
+            if ($userpwd == false) {
+                return response()->json([
+                    'ok'=> false,
+                    'error'=> "Usuario no encontrado."
+                ]);
+            }
+
+            $userpwd -> update(['password' => Hash::make($newpassword)]);
+            return response()->json([
+                'ok'=> true,
+                'mensaje'=> "Actualización de contraseña exitosa."
+            ]);
+        } catch (\Exception $ex) {
+            return response()->json([
+                'ok'=> false,
+                'error'=> "Problemas con la actulización de la contraseña"
+            ]);
+        }
+    }
+
+    public function actualizarPerfil(Request $request, $id_persona)
+    {
+        $input = $request->all();
+
+        $validator = Validator::make($input, [
+            'nombres' => 'required',
+            'apellidos' => 'required',
+            'genero' => 'required',
+            'telefono' => 'required|numeric',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'ok' => false,
+                'error' => $validator->messages(),
+            ]);
+        }
+
+        try {
+            $tbl_persona = Persona::find($id_persona);
+
+            if ($tbl_persona == false) {
+                return response()->json([
+                    "ok" => false,
+                    "error" => "No se encontro",
+                ]);
+            }
+
+            $tbl_persona->update($input);
+
+            $nombres = Persona::select("tbl_persona.nombres")
+            ->where("tbl_persona.id_persona",$id_persona)
+            ->first();
+            $genero = Persona::select("tbl_persona.genero")
+            ->where("tbl_persona.id_persona",$id_persona)
+            ->first();
+            $apellidos = Persona::select("tbl_persona.apellidos")
+            ->where("tbl_persona.id_persona",$id_persona)
+            ->first();
+            $telefono = Persona::select("tbl_persona.telefono")
+            ->where("tbl_persona.id_persona",$id_persona)
+            ->first();
+
+            return response()->json([
+                "ok" => true,
+                "mensaje" => "Se ah actualizado exitosamente tu información",
+                'nombres' => $nombres,
+                'telefono' => $telefono,
+                'apellidos' => $apellidos,
+                'genero' => $genero
+            ]);
+
+        } catch (\Exception $ex) {
+            return response()->json([
+                "ok" => false,
+                "error" => "Error al actualizar tu información",
             ]);
         }
     }

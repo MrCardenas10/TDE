@@ -19,15 +19,19 @@ const personaSchema = Yup.object().shape({
     .min(2, "Porfavor escriba un apellido más largo")
     .max(20, "Porfavor escriba un apellido más corto")
     .required("La persona necesita un apellido"),
-  correo: Yup.string()
-    .min(20, "Porfavor escriba un correo valido")
+  genero: Yup.string()
+    .min(2, "Porfavor escriba un apellido más largo")
+    .max(20, "Porfavor escriba un apellido más corto")
+    .required("La persona necesita un apellido"),
+  email: Yup.string()
+    .min(10, "Porfavor escriba un correo valido")
     .max(60, "El correo a excédio el limite de caracteres")
     .required("La persona necesita un correo"),
   telefono: Yup.string()
     .min(6, "Porfavor escriba un número válido")
     .max(8, "El numero no es valido")
     .required("La contraseña es obligatoria"),
-  id_tipo_document: Yup.string().required("Tipo documento requerido")
+  id_tipo_documento: Yup.string().required("Tipo documento requerido")
 });
 
 class ModalPersona extends Component {
@@ -140,9 +144,9 @@ class ModalPersona extends Component {
                   <div className="row">
                     <div className="col-12 form-group">
                       <label>Correo *</label>
-                      <Field name="correo" className="form-control" />
-                      {errors.correo && touched.correo ? (
-                        <div className="text-danger">{errors.correo}</div>
+                      <Field name="email" className="form-control" />
+                      {errors.email && touched.email ? (
+                        <div className="text-danger">{errors.email}</div>
                       ) : null}
                     </div>
                   </div>
@@ -163,17 +167,9 @@ class ModalPersona extends Component {
                         <div className="text-danger">{errors.apellidos}</div>
                       ) : null}
                     </div>
-                    <br />
                   </div>
                   <br />
                   <div className="row">
-                    <div className="col-6 form-group">
-                      <label>Telefono</label>
-                      <Field name="telefono" className="form-control" />
-                      {errors.telefono && touched.telefono ? (
-                        <div className="text-danger">{errors.telefono}</div>
-                      ) : null}
-                    </div>
                     <div className="col-6 form-group">
                       <label>Genero</label>
                       <Field name="genero" className="form-control" />
@@ -186,7 +182,7 @@ class ModalPersona extends Component {
                     <Button type="submit" color="primary">
                       Modificar
                     </Button>{" "}
-                    <Button color="secondary" onClick={this.toggle}>
+                    <Button color="danger" onClick={this.toggle}>
                       Cancel
                     </Button>
                   </ModalFooter>

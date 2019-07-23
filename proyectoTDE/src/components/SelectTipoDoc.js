@@ -32,10 +32,8 @@ class SelectTipoDoc extends Component {
 
   listar() {
     if (this.state.tipo_doc.length > 0) {
-      let id = this.props.id_tipo_documento;
-
       return this.state.tipo_doc.map((e, i) => (
-        <option value={id} key={i} value={e.id_tipo_documento}>
+        <option key={i} value={e.id_tipo_documento}>
           {e.tipo_documento}
         </option>
       ));

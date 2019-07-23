@@ -14,7 +14,7 @@ class UnidadMedidaSelect extends Component {
   componentDidMount() {
     axios({
       method: "get",
-      url: `${URL}/unidadmedida`,
+      url: `${URL}/selectunidadmedida`,
       headers: {
         Authorization: "bearer" + localStorage.token
       }

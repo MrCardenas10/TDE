@@ -48,8 +48,8 @@ class EntradaController extends Controller
 
     public function index()
     {
-        $detalles = Detalle::select("tbl_detalle_producto.*", "tbl_producto.producto as nombre_producto",
-        "tbl_entrada_producto.fecha_entrada as fecha")
+        $detalles = Detalle::select("tbl_detalle_producto.cantidad_producto", "tbl_producto.producto",
+        "tbl_entrada_producto.fecha_entrada")
         ->join("tbl_producto", "tbl_detalle_producto.id_producto", "=", "tbl_producto.id_producto")
         ->join("tbl_entrada_producto", "tbl_detalle_producto.id_entrada_producto", "=", "tbl_entrada_producto.id_entrada_producto")
         ->get();

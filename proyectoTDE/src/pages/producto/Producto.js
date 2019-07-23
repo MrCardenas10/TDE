@@ -5,15 +5,17 @@ import VerProducto from "./VerProducto";
 import { URL } from "./../../config/config";
 import NotificationSystem from "react-notification-system";
 import { NOTIFICATION_SYSTEM_STYLE } from "utils/constants";
-import { Card, CardBody, Col } from "reactstrap";
+import { Card, CardBody, Col, Input } from "reactstrap";
 import Tabla from "./../../components/Tabla";
-import { MdImportantDevices } from "react-icons/lib/md";
+import { MdImportantDevices, MdSearch } from "react-icons/lib/md";
 import {
   TiEdit,
   TiThumbsDown,
   TiThumbsUp,
   TiEyeOutline
 } from "react-icons/lib/ti";
+
+import { TiInfoLarge } from "react-icons/lib/ti/info-large";
 
 class Producto extends Component {
   constructor(props) {
@@ -48,15 +50,15 @@ class Producto extends Component {
           botones: [
             estado === 1
               ? this.boton_estado(
-                  "btn btn-danger bordered",
-                  <TiThumbsDown />,
-                  id_producto
-                )
+                "btn btn-danger bordered",
+                <TiThumbsDown />,
+                id_producto
+              )
               : this.boton_estado(
-                  "btn btn-success",
-                  <TiThumbsUp />,
-                  id_producto
-                ),
+                "btn btn-success",
+                <TiThumbsUp />,
+                id_producto
+              ),
             <span> </span>,
             estado === 1 ? (
               <button
@@ -70,7 +72,8 @@ class Producto extends Component {
             <span> </span>,
             <button
               onClick={() => this.modal_ver(id_producto)}
-              className="btn btn-dark"
+              className="btn btn-secondary"
+              style={{ backgroundColor: "#6c757d", borderColor: "gray" }}
             >
               <TiEyeOutline />
             </button>
@@ -105,7 +108,7 @@ class Producto extends Component {
 
           this.notificationSystem.addNotification({
             title: <MdImportantDevices />,
-            message: "Se cambio el estado exitosamente",
+            message: "Se cambió el estado exitosamente",
             level: "success"
           });
         }, 100);
@@ -208,7 +211,10 @@ class Producto extends Component {
     var ds = [];
     if (this.state.parametro !== "") {
       data.forEach(v => {
-        if (v.producto.toLowerCase().includes(this.state.parametro)) {
+        if (
+          v.producto.toLowerCase().includes(this.state.parametro) ||
+          v.estado.toLowerCase().includes(this.state.parametro)
+        ) {
           ds.push(v);
         }
       });
@@ -223,6 +229,26 @@ class Producto extends Component {
         <Col md={12}>
           <Card className="demo-icons">
             <CardBody>
+              <div align="right">
+                <div className="col-4">
+                  <MdSearch
+                    height="35"
+                    width="55"
+                    size="2"
+                    className="cr-search-form__icon-search text-secondary"
+                  />
+                  <Input
+                    type="search"
+                    className="cr-search-form__input"
+                    placeholder="Buscar..."
+                    onKeyUp={({ target }) =>
+                      this.setState({
+                        parametro: target.value.toLowerCase()
+                      })
+                    }
+                  />
+                </div>
+              </div>
               <div className="row">
                 <div className="col-12">
                   <Tabla

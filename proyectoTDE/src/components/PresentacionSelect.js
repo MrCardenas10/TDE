@@ -14,7 +14,7 @@ class PresentacionSelect extends Component {
   componentDidMount() {
     axios({
       method: "get",
-      url: `${URL}/presentacion`,
+      url: `${URL}/selectpresentacion`,
       headers: {
         Authorization: "bearer " + localStorage.token
       }
