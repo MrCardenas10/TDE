@@ -175,7 +175,11 @@ const navEntrada = [
     to: "/iniciovigilante",
     name: "Inicio",
     exact: false,
+<<<<<<< HEAD
     Icon: MdAccountBalance
+=======
+    Icon: MdRadioButtonChecked
+>>>>>>> 55982f1f0dfa776f86b93ca44f2431d97a12ba0c
   },
   {
     to: "/entradaestudiante/crear",
